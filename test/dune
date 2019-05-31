@@ -1,0 +1,11 @@
+(executables
+ (names test_generalize)
+ (libraries core ebso oUnit sorg)
+ (preprocess (pps ppx_deriving.std))
+)
+
+(alias
+ (name runtest)
+ (deps (:x test_generalize.exe))
+ (action (run %{x}))
+)
