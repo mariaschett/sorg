@@ -1,13 +1,17 @@
-open Core
+open Generalize
+open Ebso
+open Instruction
 open OUnit2
 
-let suite = [
+let suite = "suite" >::: [
+
   "Generalize equal constant term" >::(fun _ ->
-      let s = [DUP I] and let t = [DUP I]
+      let s = [DUP I] and t = [DUP I]
       in
-      assert_equal ~cmp:[%eq: Program.t pair list] ~printer:[%show: Program.t pair list]
+      assert_equal ~cmp:[%eq: (Program.t * Program.t) list] ~printer:[%show: (Program.t * Program.t) list]
           [(s, t)] (generalize s t)
-    )
+    );
+
  ]
 
 let () =
