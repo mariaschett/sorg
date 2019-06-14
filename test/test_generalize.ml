@@ -6,6 +6,12 @@ open OUnit2
 
 let suite = "suite" >::: [
 
+    "Two equal constant terms are equvivalent">::(fun _ ->
+        let s = [DUP I] and t = [DUP I]
+        in
+        assert_bool "" (equiv s t)
+      );
+
     "Generalize equal constant term" >::(fun _ ->
         let s = [DUP I] and t = [DUP I]
         in
@@ -13,6 +19,13 @@ let suite = "suite" >::: [
           ~cmp:[%eq: Rule.t list]
           ~printer:[%show: Rule.t list]
           [{lhs = s; rhs = t}] (generalize s t)
+      );
+
+    "Check optimization: remove superflous suffix" >::(fun _ ->
+        let s = [CALLVALUE; DUP I; ISZERO] in
+        let t = [CALLVALUE; CALLVALUE; ISZERO]
+        in
+        assert_bool "" (equiv s t)
       );
 
     "Remove superflous suffix" >::(fun _ ->
@@ -26,6 +39,11 @@ let suite = "suite" >::: [
           [r] (generalize s t)
       );
 
+    "Check optimization: Abstract PUSH argumetn" >::(fun _ ->
+        let s = [PUSH (Val "2"); DUP II; SWAP I] and t = [DUP I; PUSH (Val "2")] in
+        assert_bool "" (equiv s t)
+      );
+
     "Abstract PUSH argument" >::(fun _ ->
         let s = [PUSH (Val "2"); DUP II; SWAP I] and t = [DUP I; PUSH (Val "2")] in
         let r = { lhs = [PUSH (Const "c"); DUP II; SWAP I];
@@ -37,6 +55,12 @@ let suite = "suite" >::: [
           [r] (generalize s t)
       );
 
+    "Check optimization: Remove superflous prefix, abstract PUSH argument" >::(fun _ ->
+        let s = [POP; PUSH (Val "3"); SWAP I; POP] in
+        let t = [POP; POP; PUSH (Val "3")] in
+        assert_bool "" (equiv s t)
+      );
+
     "Remove superflous prefix, abstract PUSH argument" >::(fun _ ->
         let s = [POP; PUSH (Val "3"); SWAP I; POP] in
         let t = [POP; POP; PUSH (Val "3")] in
@@ -46,6 +70,12 @@ let suite = "suite" >::: [
         assert_equal ~cmp:[%eq: Rule.t list]
           ~printer:[%show: Rule.t list]
           [r] (generalize s t)
+      );
+
+    "Check optimization: Abstract PUSH args, two rules" >::(fun _ ->
+        let s = [PUSH (Val "0"); PUSH (Val "0"); ADD] in
+        let t = [PUSH (Val "0")] in
+        assert_bool "" (equiv s t)
       );
 
     "Abstract PUSH args, two rules" >::(fun _ ->
@@ -61,6 +91,12 @@ let suite = "suite" >::: [
           [r1; r2] (generalize s t)
       );
 
+    "Check optimization: Advanced constant folding">::(fun _ ->
+        let s = [PUSH (Val "1"); PUSH (Val "2"); DUP II; OR] in
+        let t = [PUSH (Val "1"); PUSH (Val "3")] in
+        assert_bool "" (equiv s t)
+      );
+
     "Advanced constant folding">::(fun _ ->
         let s = [PUSH (Val "1"); PUSH (Val "2"); DUP II; OR] in
         let t = [PUSH (Val "1"); PUSH (Val "3")]
@@ -68,6 +104,12 @@ let suite = "suite" >::: [
         assert_equal ~cmp:[%eq: Rule.t list]
           ~printer:[%show: Rule.t list]
           [{lhs = s; rhs = t}] (generalize s t)
+      );
+
+    "Check optimization: ADD commutative, combines [..]" >::(fun _ ->
+        let s = [POP; PUSH (Val "3"); DUP II; ADD; SWAP I; POP; PUSH (Val "2")] in
+        let t = [POP; PUSH (Val "3"); ADD; PUSH (Val "2")] in
+        assert_bool "" (equiv s t)
       );
 
     "ADD commutative, combines remove pre-/suffix and generalize argument" >::(fun _ ->
