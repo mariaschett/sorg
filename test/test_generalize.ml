@@ -72,6 +72,17 @@ let suite = "suite" >::: [
           [r] (generalize s t)
       );
 
+    "Remove superflous prefix" >::(fun _ ->
+        let s = [POP; PUSH (Val "0"); ADD] in
+        let t = [POP] in
+        let r = { lhs = [PUSH (Val "0"); ADD];
+                  rhs = []}
+        in
+        assert_equal ~cmp:[%eq: Rule.t list]
+          ~printer:[%show: Rule.t list]
+          [r] (generalize s t)
+      );
+
     "Check optimization: Abstract PUSH args, two rules" >::(fun _ ->
         let s = [PUSH (Val "0"); PUSH (Val "0"); ADD] in
         let t = [PUSH (Val "0")] in
