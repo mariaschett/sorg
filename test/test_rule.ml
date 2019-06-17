@@ -23,6 +23,13 @@ let suite = "suite" >::: [
         assert_equal true ([%eq: Rule.t] r1 r1)
       );
 
+    "PUSH 0 PUSH x ADD to PUSH x is equal to PUSH 0 PUSH y ADD to PUSH y" >::(fun _ ->
+        let r1 = {lhs = [PUSH (Val "0"); PUSH (Const "x"); ADD]; rhs = [PUSH (Const "x")]} in
+        let r2 = {lhs = [PUSH (Val "0"); PUSH (Const "y"); ADD]; rhs = [PUSH (Const "y")]}
+        in
+        assert_equal true ([%eq: Rule.t] r1 r2)
+      );
+
     "Show produces expected rule" >::(fun _ ->
         let r = {lhs = [DUP I; SWAP I]; rhs = []}
         in
