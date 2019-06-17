@@ -17,6 +17,12 @@ let suite = "suite" >::: [
         assert_equal false ([%eq: Rule.t] r1 r2)
       );
 
+    "PUSH 0 PUSH x ADD to PUSH x is equal to itself" >::(fun _ ->
+        let r1 = {lhs = [PUSH (Val "0"); PUSH (Const "x"); ADD]; rhs = [PUSH (Const "x")]}
+        in
+        assert_equal true ([%eq: Rule.t] r1 r1)
+      );
+
     "Show produces expected rule" >::(fun _ ->
         let r = {lhs = [DUP I; SWAP I]; rhs = []}
         in
