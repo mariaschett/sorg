@@ -73,7 +73,6 @@ let suite = "suite" >::: [
     (* remove suffix *)
 
     "Remove superflous suffix" >::(fun _ ->
-        todo "drop_suffix not implemented";
         let s = [PUSH (Val "0"); ADD; POP] in
         let t = [POP]
         in
@@ -83,7 +82,6 @@ let suite = "suite" >::: [
       );
 
     "Removing suffix is not correct" >::(fun _ ->
-        todo "drop_suffix not implemented";
         let s = [PUSH (Val "2"); POP] in
         let t = [ADDRESS; POP]
         in

@@ -17,6 +17,12 @@ let rec drop_prefix s t = match s, t with
     else (s, t)
   | _ -> (s, t)
 
-let rec drop_suffix _ _ = failwith "drop_suffix not implemented"
+let rec drop_suffix s t = match List.rev s, List.rev t with
+  | _ :: rs', _ :: rt' ->
+    let s' = List.rev rs' and t' = List.rev rt' in
+    if equiv s' t'
+    then drop_suffix s' t'
+    else (s, t)
+  | _ -> (s, t)
 
 let generalize _ _ = failwith "generalize not implemented"
