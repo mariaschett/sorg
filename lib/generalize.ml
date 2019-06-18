@@ -10,11 +10,13 @@ let is_translation_valid s t =
 
 let equiv = is_translation_valid
 
-let rec drop_prefix p1 p2 = match p1, p2 with
-  | _ :: p1', _ :: p2' ->
-    if equiv p1' p2'
-    then drop_prefix p1' p2'
-    else (p1, p2)
-  | _ -> (p1, p2)
+let rec drop_prefix s t = match s, t with
+  | _ :: s', _ :: t' ->
+    if equiv s' t'
+    then drop_prefix s' t'
+    else (s, t)
+  | _ -> (s, t)
+
+let rec drop_suffix _ _ = failwith "drop_suffix not implemented"
 
 let generalize _ _ = failwith "generalize not implemented"
