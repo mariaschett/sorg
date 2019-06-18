@@ -102,6 +102,17 @@ let suite = "suite" >::: [
           (s, t) (drop_suffix s t)
       );
 
+    (* abstract_push_args *)
+
+    "No abstraction possible">::(fun _ ->
+        todo "abstract_push_args not implemented";
+        let s = [PUSH (Val "0"); ADD] and t = []
+        in
+        assert_equal
+          ~cmp:[%eq: Rule.t list] ~printer:[%show: Rule.t list]
+          [{lhs = s; rhs = t}] (abstract_push_args s t)
+      );
+
     (* generalize *)
 
     "Remove superflous suffix" >::(fun _ ->

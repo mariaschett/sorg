@@ -25,4 +25,6 @@ let rec drop_suffix s t = match List.rev s, List.rev t with
     else (s, t)
   | _ -> (s, t)
 
+let abstract_push_args _ _ = failwith "abstract_push_args not implemented"
+
 let generalize _ _ = failwith "generalize not implemented"
