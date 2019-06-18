@@ -50,6 +50,18 @@ let suite = "suite" >::: [
         assert_bool "" (equiv s t)
       );
 
+    (* drop prefix *)
+
+    "Remove superflous prefix" >::(fun _ ->
+        let s = [POP; PUSH (Val "0"); ADD] in
+        let t = [POP]
+        in
+        assert_equal ~cmp:[%eq: Program.t * Program.t]
+          ~printer:[%show: Program.t * Program.t]
+          ([PUSH (Val "0"); ADD], []) (drop_prefix s t)
+      );
+
+
     (* generalize *)
 
     "Remove superflous suffix" >::(fun _ ->
@@ -82,18 +94,6 @@ let suite = "suite" >::: [
         let t = [POP; POP; PUSH (Val "3")] in
         let r = { lhs = [PUSH (Const "c"); SWAP I; POP];
                   rhs = [POP; PUSH (Const "c")]}
-        in
-        assert_equal ~cmp:[%eq: Rule.t list]
-          ~printer:[%show: Rule.t list]
-          [r] (generalize s t)
-      );
-
-    "Remove superflous prefix" >::(fun _ ->
-        todo "generalize not implemented";
-        let s = [POP; PUSH (Val "0"); ADD] in
-        let t = [POP] in
-        let r = { lhs = [PUSH (Val "0"); ADD];
-                  rhs = []}
         in
         assert_equal ~cmp:[%eq: Rule.t list]
           ~printer:[%show: Rule.t list]

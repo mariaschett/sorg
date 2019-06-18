@@ -1,4 +1,3 @@
-open Rule
 open Ebso
 open Evmenc
 open Z3util
@@ -18,6 +17,4 @@ let rec drop_prefix p1 p2 = match p1, p2 with
     else (p1, p2)
   | _ -> (p1, p2)
 
-let generalize l r =
-  let (l_d, r_d) = drop_prefix l r in
-  [{lhs = l_d; rhs = r_d}]
+let generalize _ _ = failwith "generalize not implemented"
