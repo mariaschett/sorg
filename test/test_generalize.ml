@@ -61,6 +61,36 @@ let suite = "suite" >::: [
           ([PUSH (Val "0"); ADD], []) (drop_prefix s t)
       );
 
+    "Removing prefix is not correct" >::(fun _ ->
+        let s = [CALLVALUE; DUP I] in
+        let t = [CALLVALUE; CALLVALUE]
+        in
+        assert_equal ~cmp:[%eq: Program.t * Program.t]
+          ~printer:[%show: Program.t * Program.t]
+          (s, t) (drop_prefix s t)
+      );
+
+    (* remove suffix *)
+
+    "Remove superflous suffix" >::(fun _ ->
+        todo "drop_suffix not implemented";
+        let s = [PUSH (Val "0"); ADD; POP] in
+        let t = [POP]
+        in
+        assert_equal ~cmp:[%eq: Program.t * Program.t]
+          ~printer:[%show: Program.t * Program.t]
+          ([PUSH (Val "0"); ADD], []) (drop_suffix s t)
+      );
+
+    "Removing suffix is not correct" >::(fun _ ->
+        todo "drop_suffix not implemented";
+        let s = [PUSH (Val "2"); POP] in
+        let t = [ADDRESS; POP]
+        in
+        assert_equal ~cmp:[%eq: Program.t * Program.t]
+          ~printer:[%show: Program.t * Program.t]
+          (s, t) (drop_suffix s t)
+      );
 
     (* generalize *)
 
