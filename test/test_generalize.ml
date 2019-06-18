@@ -12,15 +12,6 @@ let suite = "suite" >::: [
         assert_bool "" (equiv s t)
       );
 
-    "Generalize equal constant term" >::(fun _ ->
-        let s = [DUP I] and t = [DUP I]
-        in
-        assert_equal
-          ~cmp:[%eq: Rule.t list]
-          ~printer:[%show: Rule.t list]
-          [{lhs = s; rhs = t}] (generalize s t)
-      );
-
     "Check optimization: remove superflous suffix" >::(fun _ ->
         let s = [CALLVALUE; DUP I; ISZERO] in
         let t = [CALLVALUE; CALLVALUE; ISZERO]
