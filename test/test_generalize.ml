@@ -50,6 +50,18 @@ let suite = "suite" >::: [
         assert_bool "" (equiv s t)
       );
 
+    "Abstract PUSH args with constants" >::(fun _ ->
+        let s = [PUSH (Val "0"); PUSH (Const "w"); ADD] in
+        let t = [PUSH (Const "w")] in
+        assert_bool "" (equiv s t)
+      );
+
+    "Abstract PUSH args with different constants" >::(fun _ ->
+        let s = [PUSH (Val "0"); PUSH (Const "w1"); ADD] in
+        let t = [PUSH (Const "w2")] in
+        assert_bool "" (not (equiv s t))
+      );
+
     (* drop prefix *)
 
     "Remove superflous prefix" >::(fun _ ->
