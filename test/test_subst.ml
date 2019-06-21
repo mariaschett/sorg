@@ -27,8 +27,8 @@ let suite = "suite" >::: [
 
     "Map when exists in substitution">::(fun _ ->
         assert_equal
-          ~cmp:[%eq: constarg] ~printer:[%show: constarg]
-          "y" (map_exn x [(x, "y")])
+          ~cmp:[%eq: vval] ~printer:[%show: vval]
+          y_v (map_exn x [(x, y_v)])
       );
 
     (* map_extend *)
