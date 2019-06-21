@@ -3,21 +3,34 @@ open Ebso
 open Instruction
 open Evmenc
 open Z3util
+open Stackarg
 
 let p1 = [PUSH (Const "x"); PUSH (Const "y"); ADD] and p2 = [PUSH(Const "z")]
 
 let vs = ["x"; "y"; "z"]
 
 let p_subst =
-  [[("x","0"); ("x","y'"); ("x","z'"); ("x","x'")];
-   [("y","0"); ("y","z'"); ("y","y'");];
-   [("z","0"); ("z","z'")]
+  [[("x",Val "0"); ("x",Const "y'"); ("x",Const "z'"); ("x",Const"x'")];
+   [("y",Val "0"); ("y",Const "z'"); ("y",Const "y'");];
+   [("z",Val "0"); ("z",Const "z'")]
   ]
 
-let const x c = seconst x <==> senum c
-let var x y = seconst x <==> seconst y
-let abbrev_c x y = boolconst ("l" ^ x ^ Int.to_string y) <->> (const x y)
-let abbrev_v x y = boolconst ("l" ^ x ^ y) <->> (var x y)
+
+let bool_name x y =
+  let stackarg_print = function
+    | Val n -> n
+    | Const y -> y
+    | Tmpl -> failwith "No Template variables allowed"
+  in
+  "l" ^ x ^ (stackarg_print y)
+
+let z3_const = function
+  | Val n -> senum_string n
+  | Const y -> seconst y
+  | Tmpl -> failwith "No Template variables allowed"
+
+let const x c = seconst x <==> z3_const c
+let abbrev x y = boolconst (bool_name x y) <->> (const x y)
 
 let equiv p1 p2 =
   let open Z3Ops in
@@ -35,7 +48,7 @@ let equiv p1 p2 =
    (enc_equivalence_at ea sts stt ks kt))
 
 let literals ns =
-  List.map ns ~f:(List.map ~f:(fun (x, v) -> boolconst ("l" ^ x ^ v)))
+  List.map ns ~f:(List.map ~f:(fun (x, v) -> boolconst (bool_name x v)))
 
 let constr =
   (* forall vars *)
@@ -44,11 +57,8 @@ let constr =
       conj (List.map (literals p_subst) ~f:disj) <&>
       (equiv p1 p2)
       <&>
-      conj [
-        abbrev_c "x" 0; abbrev_v "x" "y'"; abbrev_v "x" "z'"; abbrev_v "x" "x'";
-        abbrev_c "y" 0; abbrev_v "y" "z'"; abbrev_v "y" "y'";
-        abbrev_c "z" 0; abbrev_v "z" "z'";
-      ] <&>
+      conj (List.concat_map p_subst ~f:(List.map ~f:(Tuple.T2.uncurry abbrev)))
+      <&>
       ~! (conj [boolconst "lx0"; boolconst "ly0"; boolconst "lz0"])
       <&>
       ~! (conj [boolconst "lx0"; boolconst "lyz'"; boolconst "lzz'"])
