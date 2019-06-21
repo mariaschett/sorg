@@ -1,6 +1,4 @@
-open Core
 open OUnit2
-open Rule
 open Ebso
 open Stackarg
 open Instruction
