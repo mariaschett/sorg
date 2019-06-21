@@ -5,7 +5,7 @@ open Instruction
 
 type var_subst = (constarg * constarg) list [@@deriving show { with_path = false }, sexp]
 
-let equal_var_subst s1 s2 = List.equal ~equal:[%eq: constarg * constarg]
+let equal_var_subst s1 s2 = List.equal [%eq: constarg * constarg]
     (List.sort ~compare:[%compare: constarg * constarg] s1)
     (List.sort ~compare:[%compare: constarg * constarg] s2)
 
