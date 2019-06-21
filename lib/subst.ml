@@ -6,9 +6,9 @@ type vvar = constarg [@@deriving show { with_path = false }, sexp, compare, equa
 type vval = Stackarg.t [@@deriving show { with_path = false }, sexp, compare, equal]
 
 type ventr = (vvar * vval) [@@deriving show { with_path = false }, sexp, compare, equal]
-type t = ventr list [@@deriving show { with_path = false }, sexp, compare, equal]
+type t = ventr list [@@deriving show { with_path = false }, sexp, compare]
 
-let equal_var_subst s1 s2 = List.equal [%eq: ventr]
+let equal_subst s1 s2 = List.equal [%eq: ventr]
     (List.sort ~compare:[%compare: ventr] s1)
     (List.sort ~compare:[%compare: ventr] s2)
 
