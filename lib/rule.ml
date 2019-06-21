@@ -38,6 +38,9 @@ let abstract_rule r =
   let (_, rhs_a) = abstract_program c_lhs r.rhs in
   {lhs = lhs_a; rhs = rhs_a}
 
+let compute_subst gr sr =
+  Subst.compute_subst (gr.lhs @ gr.rhs) (sr.lhs @ sr.rhs)
+
 let pp_tpdb_program fmt ?(var="P") p =
   let len = List.length p in
   let rec pp fmt = function
