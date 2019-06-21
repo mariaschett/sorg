@@ -8,10 +8,16 @@ let p1 = [PUSH (Const "x"); PUSH (Const "y"); ADD] and p2 = [PUSH(Const "z")]
 
 let vs = ["x"; "y"; "z"]
 
+let p_subst =
+  [[("x","0"); ("x","y'"); ("x","z'"); ("x","x'")];
+   [("y","0"); ("y","z'"); ("y","y'");];
+   [("z","0"); ("z","z'")]
+  ]
+
 let const x c = seconst x <==> senum c
 let var x y = seconst x <==> seconst y
-let abbrev_c x y = boolconst ("l" ^ x ^ Int.to_string y) <==> (const x y)
-let abbrev_v x y = boolconst ("l" ^ x ^ y) <==> (var x y)
+let abbrev_c x y = boolconst ("l" ^ x ^ Int.to_string y) <->> (const x y)
+let abbrev_v x y = boolconst ("l" ^ x ^ y) <->> (var x y)
 
 let equiv p1 p2 =
   let open Z3Ops in
@@ -28,22 +34,25 @@ let equiv p1 p2 =
    (* but their final state is different *)
    (enc_equivalence_at ea sts stt ks kt))
 
+let literals ns =
+  List.map ns ~f:(List.map ~f:(fun (x, v) -> boolconst ("l" ^ x ^ v)))
 
 let constr =
   (* forall vars *)
   foralls (List.map vs ~f:(fun x -> seconst (x ^ "'"))) (
     existss (List.map vs ~f:seconst) (
-      conj [disj [const "x" 0; var "x" "y"; var "x" "z"; var "x" "x'"];
-            disj [const "y" 0; var "y" "z"; var "y" "y'"];
-            disj [const "z" 0; var "z" "z'"]
-           ] <&>
+      conj (List.map (literals p_subst) ~f:disj) <&>
       (equiv p1 p2)
       <&>
       conj [
-        abbrev_c "x" 0; abbrev_v "x" "y"; abbrev_v "x" "z";
-        abbrev_c "y" 0; abbrev_v "y" "z";
-        abbrev_c "z" 0;
+        abbrev_c "x" 0; abbrev_v "x" "y'"; abbrev_v "x" "z'"; abbrev_v "x" "x'";
+        abbrev_c "y" 0; abbrev_v "y" "z'"; abbrev_v "y" "y'";
+        abbrev_c "z" 0; abbrev_v "z" "z'";
       ] <&>
       ~! (conj [boolconst "lx0"; boolconst "ly0"; boolconst "lz0"])
+      <&>
+      ~! (conj [boolconst "lx0"; boolconst "lyz'"; boolconst "lzz'"])
+      <&>
+      ~! (conj [boolconst "lxz'"; boolconst "ly0"; boolconst "lzz'"])
     )
   )
