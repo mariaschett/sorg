@@ -27,8 +27,8 @@ let update_subst x v s =
 let compute_subst p1 p2 =
   let rec compute_subst' p1 p2 s = match p1, p2 with
     | [], [] -> Some s
-    | Instruction.PUSH (Const a1) :: t1, Instruction.PUSH (Const a2) :: t2 ->
-      Option.(update_subst a1 (Const a2) s >>= compute_subst' t1 t2)
+    | Instruction.PUSH (Const a1) :: t1, Instruction.PUSH v :: t2 ->
+      Option.(update_subst a1 v s >>= compute_subst' t1 t2)
     | i1 :: t1, i2 :: t2 when i1 = i2 -> compute_subst' t1 t2 s
     | _ -> None
   in compute_subst' p1 p2 []

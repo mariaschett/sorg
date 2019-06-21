@@ -122,6 +122,14 @@ let suite = "suite" >::: [
           ~cmp:[%eq: Subst.t option] ~printer:[%show: Subst.t option]
           None (compute_subst l1 l2)
       );
+
+    "Map PUSH argument to value">::(fun _ ->
+        let l1 = [PUSH x_v] in
+        let l2 = [PUSH (Val "0")] in
+        assert_equal
+          ~cmp:[%eq: Subst.t option] ~printer:[%show: Subst.t option]
+          (Some [(x, Val "0")]) (compute_subst l1 l2)
+      );
  ]
 
 let () =
