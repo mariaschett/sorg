@@ -57,7 +57,7 @@ let suite = "suite" >::: [
         let s = [(x, y_v)] in
         assert_equal
           ~cmp:[%eq: Subst.t option] ~printer:[%show: Subst.t option]
-          (Some s) (update_var_subst x y_v s)
+          (Some s) (update_subst x y_v s)
       );
 
     "Update substitution where different mapping exists">::(fun _ ->
@@ -65,38 +65,38 @@ let suite = "suite" >::: [
         let s' = map_extend z (Const "v") s in
         assert_equal
           ~cmp:[%eq: Subst.t option] ~printer:[%show: Subst.t option]
-          (Some s') (update_var_subst z (Const "v") s)
+          (Some s') (update_subst z (Const "v") s)
       );
 
     "Fail when different mapping is inserted">::(fun _ ->
         let s = [(x, y_v)] in
         assert_equal
           ~cmp:[%eq: Subst.t option] ~printer:[%show: Subst.t option]
-          None (update_var_subst x (Const "v") s)
+          None (update_subst x (Const "v") s)
       );
 
     "Fail when two different instructions are at same position">::(fun _ ->
         assert_equal
           ~cmp:[%eq: Subst.t option] ~printer:[%show: Subst.t option]
-          None (compute_var_subst [ADD] [MUL])
+          None (compute_subst [ADD] [MUL])
       );
 
     "Succeed on equal programs without PUSH">::(fun _ ->
         assert_equal
           ~cmp:[%eq: Subst.t option] ~printer:[%show: Subst.t option]
-          (Some []) (compute_var_subst [ADD; SUB] [ADD; SUB])
+          (Some []) (compute_subst [ADD; SUB] [ADD; SUB])
       );
 
     "Fail on programs with different size">::(fun _ ->
         assert_equal
           ~cmp:[%eq: Subst.t option] ~printer:[%show: Subst.t option]
-          None (compute_var_subst [ADD; SUB] [ADD;])
+          None (compute_subst [ADD; SUB] [ADD;])
       );
 
     "Succeed for PUSH with one argument">::(fun _ ->
         assert_equal
           ~cmp:[%eq: Subst.t option] ~printer:[%show: Subst.t option]
-          (Some [(x, y_v)]) (compute_var_subst [PUSH x_v] [PUSH y_v])
+          (Some [(x, y_v)]) (compute_subst [PUSH x_v] [PUSH y_v])
       );
 
     "Succeed for two PUSH with same arguments">::(fun _ ->
@@ -104,7 +104,7 @@ let suite = "suite" >::: [
         let l2 = [PUSH y_v; PUSH y_v] in
         assert_equal
           ~cmp:[%eq: Subst.t option] ~printer:[%show: Subst.t option]
-          (Some [(x, y_v)]) (compute_var_subst l1 l2)
+          (Some [(x, y_v)]) (compute_subst l1 l2)
       );
 
     "Succeed for two PUSH mapping arguments to same argument">::(fun _ ->
@@ -112,7 +112,7 @@ let suite = "suite" >::: [
         let l2 = [PUSH z_v; PUSH z_v] in
         assert_equal
           ~cmp:[%eq: Subst.t option] ~printer:[%show: Subst.t option]
-          (Some [(x, z_v); (y, z_v)]) (compute_var_subst l1 l2)
+          (Some [(x, z_v); (y, z_v)]) (compute_subst l1 l2)
       );
 
     "Fail when two argument would need to map to different terms">::(fun _ ->
@@ -120,7 +120,7 @@ let suite = "suite" >::: [
         let l2 = [PUSH y_v; PUSH z_v] in
         assert_equal
           ~cmp:[%eq: Subst.t option] ~printer:[%show: Subst.t option]
-          None (compute_var_subst l1 l2)
+          None (compute_subst l1 l2)
       );
  ]
 

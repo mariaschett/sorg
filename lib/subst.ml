@@ -19,16 +19,16 @@ let map_exn x s = List.Assoc.find_exn s x ~equal:[%eq: vvar]
 (* only extend if is_mapped a1 s is false *)
 let map_extend x v s = List.Assoc.add s x v ~equal:[%eq: vvar]
 
-let update_var_subst x v s =
+let update_subst x v s =
   if not (is_mapped x s)
   then Some (map_extend x v s)
   else if (map_exn x s) = v then (Some s) else None
 
-let compute_var_subst p1 p2 =
+let compute_subst p1 p2 =
   let rec compute_subst' p1 p2 s = match p1, p2 with
     | [], [] -> Some s
     | Instruction.PUSH (Const a1) :: t1, Instruction.PUSH (Const a2) :: t2 ->
-      Option.(update_var_subst a1 (Const a2) s >>= compute_subst' t1 t2)
+      Option.(update_subst a1 (Const a2) s >>= compute_subst' t1 t2)
     | i1 :: t1, i2 :: t2 when i1 = i2 -> compute_subst' t1 t2 s
     | _ -> None
   in compute_subst' p1 p2 []

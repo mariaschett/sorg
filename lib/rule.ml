@@ -7,7 +7,7 @@ type t =
     rhs : Program.t;
   }
 
-let alpha_equal p1 p2 = match (compute_var_subst p1 p2, compute_var_subst p2 p1) with
+let alpha_equal p1 p2 = match (compute_subst p1 p2, compute_subst p2 p1) with
   | (Some _, Some _) -> true
   | _ -> false
 
