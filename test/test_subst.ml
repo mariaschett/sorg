@@ -6,9 +6,8 @@ open Stackarg
 open Instruction
 open Subst
 
-let x = (Const "x")
-let y = (Const "y")
-let z = (Const "z")
+let x = "x" and y = "y" and z = "z"
+let x_v = Const x and y_v = Const y and z_v = Const z
 
 let suite = "suite" >::: [
 
@@ -39,13 +38,13 @@ let suite = "suite" >::: [
     "Extend empty substitution">::(fun _ ->
         assert_equal
           ~cmp:[%eq: Subst.tt] ~printer:[%show: Subst.t]
-          [(x, y)] (map_extend x y [])
+          [(x, y_v)] (map_extend x y_v [])
       );
 
     "Extend substitution">::(fun _ ->
         assert_equal
           ~cmp:[%eq: Subst.t] ~printer:[%show: Subst.t]
-          [(x, y); (z, Const "v")] (map_extend x y [(z, Const "v")])
+          [(x, y_v); (z, Const "v")] (map_extend x y_v [(z, Const "v")])
       );
 
     "Element is mapped in extended substitution">::(fun _ ->
@@ -57,14 +56,14 @@ let suite = "suite" >::: [
     (* update_Subst.t *)
 
     "Update substitution where same mapping exists">::(fun _ ->
-        let s = [(x, y)] in
+        let s = [(x, y_v)] in
         assert_equal
           ~cmp:[%eq: Subst.t option] ~printer:[%show: Subst.t option]
-          (Some s) (update_var_subst x y s)
+          (Some s) (update_var_subst x y_v s)
       );
 
     "Update substitution where different mapping exists">::(fun _ ->
-        let s = [(x, y)] in
+        let s = [(x, y_v)] in
         let s' = map_extend z (Const "v") s in
         assert_equal
           ~cmp:[%eq: Subst.t option] ~printer:[%show: Subst.t option]
@@ -72,7 +71,7 @@ let suite = "suite" >::: [
       );
 
     "Fail when different mapping is inserted">::(fun _ ->
-        let s = [(x, y)] in
+        let s = [(x, y_v)] in
         assert_equal
           ~cmp:[%eq: Subst.t option] ~printer:[%show: Subst.t option]
           None (update_var_subst x (Const "v") s)
@@ -99,28 +98,28 @@ let suite = "suite" >::: [
     "Succeed for PUSH with one argument">::(fun _ ->
         assert_equal
           ~cmp:[%eq: Subst.t option] ~printer:[%show: Subst.t option]
-          (Some [(x, y)]) (compute_var_subst [PUSH x] [PUSH y;])
+          (Some [(x, y_v)]) (compute_var_subst [PUSH x_v] [PUSH y_v])
       );
 
     "Succeed for two PUSH with same arguments">::(fun _ ->
-        let l1 = [PUSH x; PUSH (Const "x")] in
-        let l2 = [PUSH y; PUSH (Const "y")] in
+        let l1 = [PUSH x_v; PUSH x_v] in
+        let l2 = [PUSH y_v; PUSH y_v] in
         assert_equal
           ~cmp:[%eq: Subst.t option] ~printer:[%show: Subst.t option]
-          (Some [(x, y)]) (compute_var_subst l1 l2)
+          (Some [(x, y_v)]) (compute_var_subst l1 l2)
       );
 
     "Succeed for two PUSH mapping arguments to same argument">::(fun _ ->
-        let l1 = [PUSH x; PUSH y] in
-        let l2 = [PUSH z; PUSH z] in
+        let l1 = [PUSH x_v; PUSH y_v] in
+        let l2 = [PUSH z_v; PUSH z_v] in
         assert_equal
           ~cmp:[%eq: Subst.t option] ~printer:[%show: Subst.t option]
-          (Some [(x, z); (y, z)]) (compute_var_subst l1 l2)
+          (Some [(x, z_v); (y, z_v)]) (compute_var_subst l1 l2)
       );
 
     "Fail when two argument would need to map to different terms">::(fun _ ->
-        let l1 = [PUSH x; PUSH x] in
-        let l2 = [PUSH y; PUSH z] in
+        let l1 = [PUSH x_v; PUSH x_v] in
+        let l2 = [PUSH y_v; PUSH z_v] in
         assert_equal
           ~cmp:[%eq: Subst.t option] ~printer:[%show: Subst.t option]
           None (compute_var_subst l1 l2)
