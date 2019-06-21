@@ -37,7 +37,7 @@ let suite = "suite" >::: [
 
     "Extend empty substitution">::(fun _ ->
         assert_equal
-          ~cmp:[%eq: Subst.tt] ~printer:[%show: Subst.t]
+          ~cmp:[%eq: Subst.t] ~printer:[%show: Subst.t]
           [(x, y_v)] (map_extend x y_v [])
       );
 
