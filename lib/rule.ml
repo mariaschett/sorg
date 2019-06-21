@@ -3,7 +3,6 @@ open Ebso
 open Instruction
 open Subst
 
-
 type t =
   { lhs : Program.t;
     rhs : Program.t;
