@@ -23,7 +23,7 @@ let mk_enc_var x s =
     eqv = List.filter (map_to_val v s) ~f:(fun y -> x < y);
   }
 
-let mk_enc_vars s = List.map (dom s) ~f:(fun s -> mk_enc_var s)
+let mk_enc_vars s = List.map (dom s) ~f:(fun x -> mk_enc_var x s)
 
 let r = {lhs = [PUSH (Const "x"); PUSH (Const "y"); ADD]; rhs = [PUSH(Const "z")]}
 
