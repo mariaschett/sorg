@@ -1,3 +1,4 @@
+open Core
 open OUnit2
 open Ebso
 open Stackarg
@@ -130,7 +131,44 @@ let suite = "suite" >::: [
           ~cmp:[%eq: Subst.t option] ~printer:[%show: Subst.t option]
           (Some [(x, Val "0")]) (compute_subst l1 l2)
       );
- ]
+
+    (* map_to_val *)
+
+    "No variable maps to value">::(fun _ ->
+        let s = [("x", Val "0"); ("y", Val "1")] in
+        assert_equal
+          ~cmp:[%eq: vvar list] ~printer:[%show: vvar list]
+          [] (map_to_val (Val "2") s)
+      );
+
+    "Only one variable maps to value">::(fun _ ->
+        let s = [("x", Val "0"); ("y", Val "1")] in
+        assert_equal
+          ~cmp:[%eq: vvar list] ~printer:[%show: vvar list]
+          ["y"] (map_to_val (Val "1") s)
+      );
+
+    "Two variables map to same">::(fun _ ->
+        let s = [("x", Val "0"); ("y", Val "0")] in
+        assert_equal
+          ~cmp:(fun xs ys -> [%eq: vvar list]
+                   (List.sort ~compare:compare_vvar xs)
+                   (List.sort ~compare:compare_vvar ys))
+          ~printer:[%show: vvar list]
+          ["x"; "y"] (map_to_val (Val "0") s)
+      );
+
+    "Two variables map to same, one different">::(fun _ ->
+        let s = [("x", Val "0"); ("y", Val "0"); ("z", Val "1");] in
+        assert_equal
+          ~cmp:(fun xs ys -> [%eq: vvar list]
+                   (List.sort ~compare:compare_vvar xs)
+                   (List.sort ~compare:compare_vvar ys))
+          ~printer:[%show: vvar list]
+          ["x"; "y"] (map_to_val (Val "0") s)
+      );
+
+  ]
 
 let () =
   run_test_tt_main suite

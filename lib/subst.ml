@@ -32,3 +32,6 @@ let compute_subst p1 p2 =
     | i1 :: t1, i2 :: t2 when i1 = i2 -> compute_subst' t1 t2 s
     | _ -> None
   in compute_subst' p1 p2 []
+
+let map_to_val v s =
+  List.fold s ~init:[] ~f:(fun xs (x,v') -> if v = v' then x :: xs else xs )
