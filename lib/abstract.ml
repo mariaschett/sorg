@@ -33,6 +33,16 @@ let literal_name x y =
     | Tmpl -> failwith "No Template variables allowed"
   in
   "l" ^ x ^ (stackarg_print y)
+
+(* bxx'-> (x, Var 0) ...*)
+let enc_literals_map evs =
+  let enc_literal_map m ev =
+    List.fold ev.eqv ~init:m
+      ~f:(fun m y -> Map.add_exn m ~key:(literal_name ev.x y) ~data:(ev.x, y))
+    |> Map.add_exn ~key:(literal_name ev.x ev.v) ~data:(ev.x, ev.v)
+    |> Map.add_exn ~key:(literal_name ev.x ev.forall) ~data:(ev.x, ev.forall)
+  in
+  List.fold evs ~init:String.Map.empty ~f:enc_literal_map
 let r = {lhs = [PUSH (Const "x"); PUSH (Const "y"); ADD]; rhs = [PUSH(Const "z")]}
 
 let vs = Rule.consts r
