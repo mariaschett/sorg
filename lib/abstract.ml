@@ -11,16 +11,17 @@ open Subst
 type enc_var = {
   x : vvar;
   v : vval;
-  forall : vvar;
-  eqv : vvar list; (* contains only smaller variables *)
+  forall : vval;
+  eqv : vval list; (* contains only smaller variables *)
 }
 
 let mk_enc_var x s =
   let v = map_exn x s in
   { x = x;
     v = v;
-    forall = x ^ "'";
-    eqv = List.filter (map_to_val v s) ~f:(fun y -> x < y);
+    forall = Const (x ^ "'");
+    eqv = List.filter_map (map_to_val v s)
+        ~f:(fun y -> if x < y then Some (Const (y ^ "'")) else None);
   }
 
 let mk_enc_vars s = List.map (dom s) ~f:(fun x -> mk_enc_var x s)
