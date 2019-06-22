@@ -26,6 +26,13 @@ let mk_enc_var x s =
 
 let mk_enc_vars s = List.map (dom s) ~f:(fun x -> mk_enc_var x s)
 
+let literal_name x y =
+  let stackarg_print = function
+    | Val n -> n
+    | Const y -> y
+    | Tmpl -> failwith "No Template variables allowed"
+  in
+  "l" ^ x ^ (stackarg_print y)
 let r = {lhs = [PUSH (Const "x"); PUSH (Const "y"); ADD]; rhs = [PUSH(Const "z")]}
 
 let vs = Rule.consts r
@@ -36,21 +43,13 @@ let p_subst =
    [("z",Val "0"); ("z",Const "z'")]
   ]
 
-let bool_name x y =
-  let stackarg_print = function
-    | Val n -> n
-    | Const y -> y
-    | Tmpl -> failwith "No Template variables allowed"
-  in
-  "l" ^ x ^ (stackarg_print y)
-
 let z3_const = function
   | Val n -> senum_string n
   | Const y -> seconst y
   | Tmpl -> failwith "No Template variables allowed"
 
 let const x c = seconst x <==> z3_const c
-let abbrev x y = boolconst (bool_name x y) <->> (const x y)
+let abbrev x y = boolconst (literal_name x y) <->> (const x y)
 
 let equiv p1 p2 =
   let open Z3Ops in
@@ -68,7 +67,7 @@ let equiv p1 p2 =
    (enc_equivalence_at ea sts stt ks kt))
 
 let literals ns =
-  List.map ns ~f:(List.map ~f:(fun (x, v) -> boolconst (bool_name x v)))
+  List.map ns ~f:(List.map ~f:(fun (x, v) -> boolconst (literal_name x v)))
 
 let constr =
   (* forall vars *)
