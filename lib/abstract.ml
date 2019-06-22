@@ -5,6 +5,23 @@ open Evmenc
 open Z3util
 open Stackarg
 open Rule
+open Subst
+
+(* to construct the constraints for a variable *)
+type enc_var = {
+  x : vvar;
+  v : vval;
+  forall : vvar;
+  eqv : vvar list; (* contains only smaller variables *)
+}
+
+let mk_enc_var x s =
+  let v = map_exn x s in
+  { x = x;
+    v = v;
+    forall = x ^ "'";
+    eqv = List.filter (map_to_val v s) ~f:(fun y -> x < y);
+  }
 
 let r = {lhs = [PUSH (Const "x"); PUSH (Const "y"); ADD]; rhs = [PUSH(Const "z")]}
 
