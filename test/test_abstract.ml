@@ -7,6 +7,11 @@ open Subst
 
 let s = [("x",Val "0"); ("y",Val "0"); ("z",Val "0"); ]
 
+let ss =
+  [("x",Val "0"); ("x",Const "y'"); ("x",Const "z'"); ("x",Const"x'");
+   ("y",Val "0"); ("y",Const "z'"); ("y",Const "y'");
+   ("z",Val "0"); ("z",Const "z'")]
+
 let eq_enc_var ex ey =
   ex.x = ey.x && ex.v = ey.v && ex.forall = ey.forall &&
   (List.sort ~compare:compare_vval ex.eqv) = (List.sort ~compare:(compare_vval) ey.eqv)
@@ -40,6 +45,17 @@ let suite = "suite" >::: [
             ~printer:show_enc_var
             {x = "z"; v = Val "0"; forall = Const "z'"; eqv = []} (mk_enc_var "z" s)
       );
+
+    (* enc_literal_map *)
+
+    "Check map of encoding literals">::(fun _ ->
+        let m = List.map ss ~f:(fun (x,v) -> (literal_name x v, (x,v))) in
+        assert_equal
+          ~cmp:(String.Map.equal [%eq: ventr])
+          ~printer:(fun m -> String.Map.sexp_of_t sexp_of_ventr m |> Sexp.to_string)
+        (String.Map.of_alist_exn m) (enc_literals_map (mk_enc_vars s))
+      );
+
   ]
 
 let () =
