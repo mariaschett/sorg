@@ -12,6 +12,8 @@ let equal s1 s2 = List.equal [%eq: ventr]
     (List.sort ~compare:[%compare: ventr] s1)
     (List.sort ~compare:[%compare: ventr] s2)
 
+let dom s = List.map s ~f:Tuple.T2.get1
+
 let is_mapped x s = List.Assoc.mem s x ~equal:[%eq: vvar]
 
 let map_exn x s = List.Assoc.find_exn s x ~equal:[%eq: vvar]
