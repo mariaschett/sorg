@@ -4,17 +4,17 @@ open Instruction
 open Evmenc
 open Z3util
 open Stackarg
+open Rule
 
-let p1 = [PUSH (Const "x"); PUSH (Const "y"); ADD] and p2 = [PUSH(Const "z")]
+let r = {lhs = [PUSH (Const "x"); PUSH (Const "y"); ADD]; rhs = [PUSH(Const "z")]}
 
-let vs = ["x"; "y"; "z"]
+let vs = Rule.consts r
 
 let p_subst =
   [[("x",Val "0"); ("x",Const "y'"); ("x",Const "z'"); ("x",Const"x'")];
    [("y",Val "0"); ("y",Const "z'"); ("y",Const "y'");];
    [("z",Val "0"); ("z",Const "z'")]
   ]
-
 
 let bool_name x y =
   let stackarg_print = function
@@ -55,7 +55,7 @@ let constr =
   foralls (List.map vs ~f:(fun x -> seconst (x ^ "'"))) (
     existss (List.map vs ~f:seconst) (
       conj (List.map (literals p_subst) ~f:disj) <&>
-      (equiv p1 p2)
+      (equiv r.lhs r.rhs)
       <&>
       conj (List.concat_map p_subst ~f:(List.map ~f:(Tuple.T2.uncurry abbrev)))
       <&>
