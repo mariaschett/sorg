@@ -34,4 +34,4 @@ let compute_subst p1 p2 =
   in compute_subst' p1 p2 []
 
 let map_to_val v s =
-  List.fold s ~init:[] ~f:(fun xs (x,v') -> if v = v' then x :: xs else xs )
+  List.fold s ~init:[] ~f:(fun xs (x,v') -> if v = v' then x :: xs else xs)
