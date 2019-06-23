@@ -168,6 +168,52 @@ let suite = "suite" >::: [
           ["x"; "y"] (map_to_val (Val "0") s)
       );
 
+    (* apply *)
+
+    "Apply empty substitiution">::(fun _ ->
+        let s = [] in
+        let p = [PUSH (Const "x")] in
+        assert_equal
+          ~cmp:[%eq: Program.t]
+          ~printer:[%show: Program.t]
+          p (apply p s)
+      );
+
+    "Apply substitiution on variable in program">::(fun _ ->
+        let s = [("x", Val "0")] in
+        let p = [PUSH (Const "x")] in
+        assert_equal
+          ~cmp:[%eq: Program.t]
+          ~printer:[%show: Program.t]
+          [PUSH (Val "0")] (apply p s)
+      );
+
+    "Apply substitiution where variable is not in program">::(fun _ ->
+        let s = [("y", Val "0")] in
+        let p = [PUSH (Const "x")] in
+        assert_equal
+          ~cmp:[%eq: Program.t]
+          ~printer:[%show: Program.t]
+          p (apply p s)
+      );
+
+    "Apply substitiution on program without PUSH">::(fun _ ->
+        let s = [("x", Val "0")] in
+        let p = [ADD] in
+        assert_equal
+          ~cmp:[%eq: Program.t]
+          ~printer:[%show: Program.t]
+          p (apply p s)
+      );
+
+    "Apply substitiution twice">::(fun _ ->
+        let s = [("x", Val "0")] in
+        let p = [PUSH (Const "x"); PUSH (Const "x")] in
+        assert_equal
+          ~cmp:[%eq: Program.t]
+          ~printer:[%show: Program.t]
+          [PUSH (Val "0"); PUSH (Val "0")] (apply p s)
+      );
   ]
 
 let () =

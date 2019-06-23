@@ -37,3 +37,10 @@ let compute_subst p1 p2 =
 
 let map_to_val v s =
   List.fold s ~init:[] ~f:(fun xs (x,v') -> if v = v' then x :: xs else xs)
+
+let apply p s =
+  let apply_instruction = function
+    | Instruction.PUSH (Const x) when is_mapped x s -> Instruction.PUSH (map_exn x s)
+    | i -> i
+  in
+  List.map p ~f:(apply_instruction)
