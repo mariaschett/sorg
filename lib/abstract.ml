@@ -1,6 +1,5 @@
 open Core
 open Ebso
-open Instruction
 open Evmenc
 open Z3util
 open Stackarg
@@ -65,50 +64,49 @@ let enc_literals_def evs =
   Map.fold (enc_literals_map evs)
     ~init:top ~f:(fun ~key:l ~data:(x, v) c -> c <&> mk_def l x v)
 
-let r = {lhs = [PUSH (Const "x"); PUSH (Const "y"); ADD]; rhs = [PUSH(Const "z")]}
-
-let vs = Rule.consts r
-
-let p_subst =
-  [[("x",Val "0"); ("x",Const "y'"); ("x",Const "z'"); ("x",Const"x'")];
-   [("y",Val "0"); ("y",Const "z'"); ("y",Const "y'");];
-   [("z",Val "0"); ("z",Const "z'")]
-  ]
-
-let const x c = seconst x <==> z3_const c
-let abbrev x y = boolconst (literal_name x y) <->> (const x y)
-
-let equiv p1 p2 =
+let enc_rule_valid r =
   let open Z3Ops in
-  let ea = mk_enc_consts p1 (`User []) in
-  let sts = mk_state ea "_s" in
-  let stt = mk_state ea "_t" in
-  let kt = num (List.length p2) and ks = num (List.length ea.p) in
-  ((List.foldi p2 ~init:(enc_program ea sts)
+  let ea = mk_enc_consts r.lhs (`User []) in
+  let sts = mk_state ea "_lhs" in
+  let stt = mk_state ea "_rhs" in
+  let kt = num (List.length r.rhs) and ks = num (List.length ea.p) in
+  ((List.foldi r.rhs ~init:(enc_program ea sts)
       ~f:(fun j enc oc -> enc <&> enc_instruction ea stt (num j) oc)) &&
-       (* they start in the same state *)
    (enc_equivalence_at ea sts stt (num 0) (num 0)) &&
    sts.used_gas @@ (forall_vars ea @ [num 0]) ==
                    stt.used_gas @@ (forall_vars ea @ [num 0]) &&
-   (* but their final state is different *)
    (enc_equivalence_at ea sts stt ks kt))
 
-let literals ns =
-  List.map ns ~f:(List.map ~f:(fun (x, v) -> boolconst (literal_name x v)))
-
-let constr =
-  (* forall vars *)
-  foralls (List.map vs ~f:(fun x -> seconst (x ^ "'"))) (
-    existss (List.map vs ~f:seconst) (
-      conj (List.map (literals p_subst) ~f:disj) <&>
-      (equiv r.lhs r.rhs)
-      <&>
-      conj (List.concat_map p_subst ~f:(List.map ~f:(Tuple.T2.uncurry abbrev)))
-      <&>
-      ~! (conj [boolconst "lx0"; boolconst "ly0"; boolconst "lz0"])
-      <&>
-      ~! (conj [boolconst "lx0"; boolconst "lyz'"; boolconst "lzz'"])
-      <&>
-      ~! (conj [boolconst "lxz'"; boolconst "ly0"; boolconst "lzz'"])
+let enc_abstract_rule r evs =
+  foralls (List.map evs ~f:(fun ev -> z3_const ev.forall)) (
+    existss (List.map evs ~f:(fun ev -> seconst @@ ev.x)) (
+      enc_literals_atleastone evs <&> enc_rule_valid r
+      <&> enc_literals_def evs
     )
   )
+
+let dec_abstract_rule m ls =
+  Map.fold ls ~init:[] ~f:(fun ~key:l ~data:xv s ->
+      if Z3.Boolean.is_true (eval_const m (boolconst l)) then xv :: s else s)
+
+let forbid_subst s =
+  ~! (conj (List.map s ~f:(fun (x, v) -> boolconst @@ literal_name x v)))
+
+let get_next_abstraction ls c =
+  match solve_model [c] with
+  | None -> None
+  | Some m ->
+    let s = dec_abstract_rule m ls in
+    Some (s, c <&> forbid_subst s)
+
+let all_valid_abstractions r =
+  let gr = Rule.abstract_rule r in
+  let s = Option.value_exn (Subst.compute_subst (gr.lhs @ gr.rhs) (r.lhs @ r.rhs)) in
+  let evs = mk_enc_vars s in
+  let ls = enc_literals_map evs in
+  let c = enc_abstract_rule gr evs in
+  let rec abstractions ss c = match get_next_abstraction ls c with
+    | None -> ss
+    | Some (s, c) -> abstractions (s :: ss) c
+  in
+  List.map (abstractions [] c) ~f:(Rule.apply gr)
