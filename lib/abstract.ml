@@ -43,6 +43,15 @@ let enc_literals_map evs =
     |> Map.add_exn ~key:(literal_name ev.x ev.forall) ~data:(ev.x, ev.forall)
   in
   List.fold evs ~init:String.Map.empty ~f:enc_literal_map
+
+let enc_literals_atleastone evs =
+  let enc_literal_atleastone ev =
+    [ boolconst @@ literal_name ev.x ev.v
+    ; boolconst @@ literal_name ev.x ev.forall
+    ] @ List.map ev.eqv ~f:(fun y -> boolconst @@ literal_name ev.x y)
+  in
+  conj @@ List.map evs ~f:(fun ev -> disj @@ enc_literal_atleastone ev)
+
 let r = {lhs = [PUSH (Const "x"); PUSH (Const "y"); ADD]; rhs = [PUSH(Const "z")]}
 
 let vs = Rule.consts r
