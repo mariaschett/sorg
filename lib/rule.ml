@@ -41,6 +41,8 @@ let abstract_rule r =
 let compute_subst gr sr =
   Subst.compute_subst (gr.lhs @ gr.rhs) (sr.lhs @ sr.rhs)
 
+let apply r s = {lhs = apply r.lhs s; rhs = apply r.rhs s;}
+
 let pp_tpdb_program fmt ?(var="P") p =
   let len = List.length p in
   let rec pp fmt = function
