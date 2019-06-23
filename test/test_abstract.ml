@@ -3,6 +3,7 @@ open OUnit2
 open Ebso
 open Z3util
 open Stackarg
+open Evmenc
 open Subst
 open Abstract
 
@@ -66,7 +67,22 @@ let suite = "suite" >::: [
           List.filter names
             ~f:(fun n -> Z3.Boolean.is_true @@ eval_const m (boolconst n))
         in
-        assert_equal ~printer:[%show: int] (List.length s)  (List.length trues)
+        assert_equal ~printer:[%show: int] ~cmp:[%eq: int]
+          (List.length s)  (List.length trues)
+      );
+
+    (* enc_literals_def *)
+
+    "Check model for defining literals" >:: (fun _ ->
+        let c = enc_literals_def (mk_enc_vars s) in
+        let c = c <&> conj @@ List.map ss ~f:(fun (x, v) -> boolconst (literal_name x v)) in
+        let m = solve_model_exn [c] in
+        let vals =
+          List.map s ~f:(fun (x, _) ->
+              Z3.Arithmetic.Integer.get_int @@ eval_const m (seconst x))
+        in
+        assert_equal ~printer:[%show: int list] ~cmp:[%eq: int list]
+          [0; 0; 0] vals
       );
 
   ]
