@@ -5,6 +5,7 @@ open Z3util
 open Stackarg
 open Evmenc
 open Subst
+open Rule
 open Abstract
 
 let s = [("x",Val "0"); ("y",Val "0"); ("z",Val "0"); ]
@@ -21,6 +22,10 @@ let eq_enc_var ex ey =
 let show_enc_var ex =
   "x = " ^ ex.x ^ "; v = " ^ [%show: vval] ex.v ^ "; forall = " ^ [%show: vval] ex.forall ^ "; eqv = " ^
   [%show: vval list] (List.sort ~compare:compare_vval ex.eqv)
+
+let sort_rules rs =
+  let compare_rule r1 r2 = List.compare Instruction.compare (r1.lhs @ r1.rhs) (r2.lhs @ r2.rhs) in
+  List.sort ~compare:compare_rule rs
 
 let suite = "suite" >::: [
 
@@ -83,6 +88,31 @@ let suite = "suite" >::: [
         in
         assert_equal ~printer:[%show: int list] ~cmp:[%eq: int list]
           [0; 0; 0] vals
+      );
+
+    (* abstract_rule *)
+
+    "Find all substitutions for abstracting rule" >:: (fun _ ->
+        let r = {lhs = [PUSH (Val "0")]; rhs = [PUSH (Val "0")]} in
+        let rs = all_valid_abstractions r in
+        assert_equal
+          ~printer:(fun rs -> [%show: Rule.t list] (sort_rules rs))
+          ~cmp:(fun rs rs' -> [%eq: Rule.t list] (sort_rules rs) (sort_rules rs'))
+          [{lhs = [PUSH (Const "x")]; rhs = [PUSH (Const "x")]}; r]
+          rs
+      );
+
+    "Find all substitutions for abstracting rule" >:: (fun _ ->
+        let r = {lhs = [PUSH (Val "0"); PUSH (Val "0"); ADD]; rhs = [PUSH (Val "0")]} in
+        let rs = all_valid_abstractions r in
+        assert_equal
+          ~printer:(fun rs -> [%show: Rule.t list] (sort_rules rs))
+          ~cmp:(fun rs rs' -> [%eq: Rule.t list] (sort_rules rs) (sort_rules rs'))
+          [ {lhs = [PUSH (Val "0"); PUSH (Const "x"); ADD]; rhs = [PUSH (Const "x")]}
+          ; {lhs = [PUSH (Const "x"); PUSH (Val "0"); ADD]; rhs = [PUSH (Const "x")]}
+          ; r
+          ]
+          rs
       );
 
   ]
