@@ -52,6 +52,19 @@ let enc_literals_atleastone evs =
   in
   conj @@ List.map evs ~f:(fun ev -> disj @@ enc_literal_atleastone ev)
 
+let z3_const = function
+  | Val n -> senum_string n
+  | Const y -> seconst y
+  | Tmpl -> failwith "No Template variables allowed"
+
+let enc_literals_def evs =
+  let mk_def l x v =
+    let open Z3Ops in
+    boolconst l ==> (seconst x == z3_const v)
+  in
+  Map.fold (enc_literals_map evs)
+    ~init:top ~f:(fun ~key:l ~data:(x, v) c -> c <&> mk_def l x v)
+
 let r = {lhs = [PUSH (Const "x"); PUSH (Const "y"); ADD]; rhs = [PUSH(Const "z")]}
 
 let vs = Rule.consts r
@@ -61,11 +74,6 @@ let p_subst =
    [("y",Val "0"); ("y",Const "z'"); ("y",Const "y'");];
    [("z",Val "0"); ("z",Const "z'")]
   ]
-
-let z3_const = function
-  | Val n -> senum_string n
-  | Const y -> seconst y
-  | Tmpl -> failwith "No Template variables allowed"
 
 let const x c = seconst x <==> z3_const c
 let abbrev x y = boolconst (literal_name x y) <->> (const x y)
