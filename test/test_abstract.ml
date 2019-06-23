@@ -1,9 +1,10 @@
 open Core
 open OUnit2
 open Ebso
+open Z3util
 open Stackarg
-open Abstract
 open Subst
+open Abstract
 
 let s = [("x",Val "0"); ("y",Val "0"); ("z",Val "0"); ]
 
@@ -54,6 +55,18 @@ let suite = "suite" >::: [
           ~cmp:(String.Map.equal [%eq: ventr])
           ~printer:(fun m -> String.Map.sexp_of_t sexp_of_ventr m |> Sexp.to_string)
         (String.Map.of_alist_exn m) (enc_literals_map (mk_enc_vars s))
+      );
+
+    (* enc_literals_atleastone *)
+
+    "Check model for enc_literals_atleastone" >:: (fun _ ->
+        let names = List.map ss ~f:(fun (x,v) -> (literal_name x v)) in
+        let m = solve_model_exn [enc_literals_atleastone (mk_enc_vars s)] in
+        let trues =
+          List.filter names
+            ~f:(fun n -> Z3.Boolean.is_true @@ eval_const m (boolconst n))
+        in
+        assert_equal ~printer:[%show: int] (List.length s)  (List.length trues)
       );
 
   ]
