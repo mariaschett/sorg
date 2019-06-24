@@ -136,7 +136,7 @@ let suite = "suite" >::: [
           (Rule.show_tpdb_system rs)
       );
 
-    (* compute_subst *)
+    (* match_opt *)
 
     "Find substitituion between general program and instantiated program">::(fun _ ->
         let gr = {lhs = [PUSH (Const "x"); PUSH (Const "y"); ADD];
