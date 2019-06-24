@@ -99,25 +99,25 @@ let suite = "suite" >::: [
     "Fail when two different instructions are at same position">::(fun _ ->
         assert_equal
           ~cmp:[%eq: Subst.t option] ~printer:[%show: Subst.t option]
-          None (compute_subst [ADD] [MUL])
+          None (match_opt [ADD] [MUL])
       );
 
     "Succeed on equal programs without PUSH">::(fun _ ->
         assert_equal
           ~cmp:[%eq: Subst.t option] ~printer:[%show: Subst.t option]
-          (Some []) (compute_subst [ADD; SUB] [ADD; SUB])
+          (Some []) (match_opt [ADD; SUB] [ADD; SUB])
       );
 
     "Fail on programs with different size">::(fun _ ->
         assert_equal
           ~cmp:[%eq: Subst.t option] ~printer:[%show: Subst.t option]
-          None (compute_subst [ADD; SUB] [ADD;])
+          None (match_opt [ADD; SUB] [ADD;])
       );
 
     "Succeed for PUSH with one argument">::(fun _ ->
         assert_equal
           ~cmp:[%eq: Subst.t option] ~printer:[%show: Subst.t option]
-          (Some [(x, y_v)]) (compute_subst [PUSH x_v] [PUSH y_v])
+          (Some [(x, y_v)]) (match_opt [PUSH x_v] [PUSH y_v])
       );
 
     "Succeed for two PUSH with same arguments">::(fun _ ->
@@ -125,7 +125,7 @@ let suite = "suite" >::: [
         let l2 = [PUSH y_v; PUSH y_v] in
         assert_equal
           ~cmp:[%eq: Subst.t option] ~printer:[%show: Subst.t option]
-          (Some [(x, y_v)]) (compute_subst l1 l2)
+          (Some [(x, y_v)]) (match_opt l1 l2)
       );
 
     "Succeed for two PUSH mapping arguments to same argument">::(fun _ ->
@@ -133,7 +133,7 @@ let suite = "suite" >::: [
         let l2 = [PUSH z_v; PUSH z_v] in
         assert_equal
           ~cmp:[%eq: Subst.t option] ~printer:[%show: Subst.t option]
-          (Some [(x, z_v); (y, z_v)]) (compute_subst l1 l2)
+          (Some [(x, z_v); (y, z_v)]) (match_opt l1 l2)
       );
 
     "Fail when two argument would need to map to different terms">::(fun _ ->
@@ -141,7 +141,7 @@ let suite = "suite" >::: [
         let l2 = [PUSH y_v; PUSH z_v] in
         assert_equal
           ~cmp:[%eq: Subst.t option] ~printer:[%show: Subst.t option]
-          None (compute_subst l1 l2)
+          None (match_opt l1 l2)
       );
 
     "Map PUSH argument to value">::(fun _ ->
@@ -149,7 +149,7 @@ let suite = "suite" >::: [
         let l2 = [PUSH (Val "0")] in
         assert_equal
           ~cmp:[%eq: Subst.t option] ~printer:[%show: Subst.t option]
-          (Some [(x, Val "0")]) (compute_subst l1 l2)
+          (Some [(x, Val "0")]) (match_opt l1 l2)
       );
 
     (* map_to_val *)

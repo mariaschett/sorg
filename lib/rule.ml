@@ -8,7 +8,7 @@ type t =
     rhs : Program.t;
   }
 
-let alpha_equal p1 p2 = match (compute_subst p1 p2, compute_subst p2 p1) with
+let alpha_equal p1 p2 = match (match_opt p1 p2, match_opt p2 p1) with
   | (Some _, Some _) -> true
   | _ -> false
 
@@ -38,8 +38,8 @@ let abstract_rule r =
   let (_, rhs_a) = abstract_program c_lhs r.rhs in
   {lhs = lhs_a; rhs = rhs_a}
 
-let compute_subst gr sr =
-  Subst.compute_subst (gr.lhs @ gr.rhs) (sr.lhs @ sr.rhs)
+let match_opt gr sr =
+  Subst.match_opt (gr.lhs @ gr.rhs) (sr.lhs @ sr.rhs)
 
 let apply r s = {lhs = apply r.lhs s; rhs = apply r.rhs s;}
 

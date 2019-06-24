@@ -145,7 +145,7 @@ let suite = "suite" >::: [
                   rhs = [PUSH (Val "0")]} in
         assert_equal
           ~cmp:[%eq: Subst.t option] ~printer:[%show: Subst.t option]
-        (Some [("x", Val "0"); ("y", Val "0"); ("z", Val "0")]) (compute_subst gr sr)
+        (Some [("x", Val "0"); ("y", Val "0"); ("z", Val "0")]) (match_opt gr sr)
       );
 
   ]

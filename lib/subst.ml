@@ -26,14 +26,14 @@ let update_subst x v s =
   then Some (map_extend x v s)
   else if (map_exn x s) = v then (Some s) else None
 
-let compute_subst p1 p2 =
-  let rec compute_subst' p1 p2 s = match p1, p2 with
+let match_opt p1 p2 =
+  let rec match_opt' p1 p2 s = match p1, p2 with
     | [], [] -> Some s
     | Instruction.PUSH (Const a1) :: t1, Instruction.PUSH v :: t2 ->
-      Option.(update_subst a1 v s >>= compute_subst' t1 t2)
-    | i1 :: t1, i2 :: t2 when i1 = i2 -> compute_subst' t1 t2 s
+      Option.(update_subst a1 v s >>= match_opt' t1 t2)
+    | i1 :: t1, i2 :: t2 when i1 = i2 -> match_opt' t1 t2 s
     | _ -> None
-  in compute_subst' p1 p2 []
+  in match_opt' p1 p2 []
 
 let map_to_val v s =
   List.fold s ~init:[] ~f:(fun xs (x,v') -> if v = v' then x :: xs else xs)
