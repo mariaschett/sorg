@@ -152,6 +152,23 @@ let suite = "suite" >::: [
           (Some [(x, Val "0")]) (match_opt l1 l2)
       );
 
+    (* maps_to_val *)
+
+    "Variable maps to value">::(fun _ ->
+        let s = [("x", Val "0")] in
+        assert_equal true (maps_to_val "x" (Val "0") s)
+      );
+
+    "Variable does not map to value">::(fun _ ->
+        let s = [("x", Val "0")] in
+        assert_equal false (maps_to_val "x" (Val "1") s)
+      );
+
+    "Variable is not in domain of substitution">::(fun _ ->
+        let s = [("x", Val "0")] in
+        assert_equal false (maps_to_val "y" (Val "0") s)
+      );
+
     (* map_to_val *)
 
     "No variable maps to value">::(fun _ ->

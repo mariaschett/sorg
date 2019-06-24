@@ -19,6 +19,10 @@ let in_dom x s = List.Assoc.mem s x ~equal:[%eq: vvar]
 
 let maps_to_exn x s = List.Assoc.find_exn s x ~equal:[%eq: vvar]
 
+let maps_to_val x v s = if in_dom x s then v = maps_to_exn x s else false
+
+let map_to_val v s = List.filter (dom s) ~f:(fun x -> maps_to_val x v s)
+
 (* only extend if in_dom x s is false *)
 let extend_maps_to x v s = List.Assoc.add s x v ~equal:[%eq: vvar]
 
@@ -33,9 +37,6 @@ let match_opt p1 p2 =
   match match_prefix with
   | Ok s -> s
   | Unequal_lengths -> None
-
-let map_to_val v s =
-  List.fold s ~init:[] ~f:(fun xs (x,v') -> if v = v' then x :: xs else xs)
 
 let apply p s =
   let apply_instruction = function
