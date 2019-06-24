@@ -21,12 +21,12 @@ let show r = pp Format.str_formatter r |> Format.flush_str_formatter
 
 let consts r = List.stable_dedup (Program.consts r.lhs @ Program.consts r.rhs)
 
-let instruction_schema w = function
-  | PUSH (Val _) -> Some (PUSH (Const w))
+let instruction_schema x = function
+  | PUSH (Val _) -> Some (PUSH (Const x))
   | _ -> None
 
 let maximal_program_schema c_0 =
-  let fresh_var c = "w_" ^ Int.to_string c in
+  let fresh_var c = "x_" ^ Int.to_string c in
   List.fold_left ~init:(c_0, []) ~f:(fun (c, p) i ->
       match instruction_schema (fresh_var c) i with
       | Some i_a -> (c + 1, p @ [i_a])
@@ -34,9 +34,9 @@ let maximal_program_schema c_0 =
     )
 
 let maximal_rule_schema r =
-  let (c_lhs, lhs_a) = maximal_program_schema 0 r.lhs in
-  let (_, rhs_a) = maximal_program_schema c_lhs r.rhs in
-  {lhs = lhs_a; rhs = rhs_a}
+  let (c_lhs, lhs_schema) = maximal_program_schema 0 r.lhs in
+  let (_, rhs_schema) = maximal_program_schema c_lhs r.rhs in
+  {lhs = lhs_schema; rhs = rhs_schema}
 
 let match_opt gr sr =
   Subst.match_opt (gr.lhs @ gr.rhs) (sr.lhs @ sr.rhs)
