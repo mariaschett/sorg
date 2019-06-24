@@ -54,27 +54,27 @@ let suite = "suite" >::: [
           "DUP1 SWAP1 -> " ([%show: Rule.t] r)
       );
 
-    (* abstract instruction *)
+    (* instruction_schema *)
 
     "Non-PUSH is not abstracted">::(fun _ ->
         let i = ADD and w = "w_0" in
         assert_equal
           ~cmp:[%eq: Instruction.t option] ~printer:[%show: Instruction.t option]
-          None (abstract_instruction w i)
+          None (instruction_schema w i)
       );
 
     "PUSH (Const x) instruction is already abstract and not abstracted">::(fun _ ->
         let i = PUSH (Const "x") and w = "w_0" in
         assert_equal
           ~cmp:[%eq: Instruction.t option] ~printer:[%show: Instruction.t option]
-          None (abstract_instruction w i)
+          None (instruction_schema w i)
       );
 
     "PUSH (Val 0) instruction is abstracted">::(fun _ ->
         let i = PUSH (Val "0") and w = "w_0" in
         assert_equal
           ~cmp:[%eq: Instruction.t option] ~printer:[%show: Instruction.t option]
-          (Some (PUSH (Const w))) (abstract_instruction w i)
+          (Some (PUSH (Const w))) (instruction_schema w i)
       );
 
     (* abstract program *)
@@ -83,14 +83,14 @@ let suite = "suite" >::: [
         let p = [] in
         assert_equal
           ~cmp:[%eq: int * Program.t] ~printer:[%show: int * Program.t]
-          (0, p) (abstract_program 0 p)
+          (0, p) (maximal_program_schema 0 p)
       );
 
     "Abstract program without PUSH">::(fun _ ->
         let p = [DUP I; SWAP I] in
         assert_equal
           ~cmp:[%eq: int * Program.t] ~printer:[%show: int * Program.t]
-          (0, p) (abstract_program 0 p)
+          (0, p) (maximal_program_schema 0 p)
       );
 
     "Abstract program with PUSH (Val n) and PUSH (Const c) instructions">::(fun _ ->
@@ -99,7 +99,7 @@ let suite = "suite" >::: [
         assert_equal
         ~cmp:(fun (i, p) (i', p') -> i = i' && alpha_equal p p')
         ~printer:[%show: int * Program.t]
-        (2, p') (abstract_program 0 p)
+        (2, p') (maximal_program_schema 0 p)
       );
 
     (* abstract rule *)
@@ -109,7 +109,7 @@ let suite = "suite" >::: [
         let r' = {lhs = [PUSH (Const "w_1"); PUSH (Const "w_2"); ADD]; rhs = [PUSH (Const "w_3")]} in
         assert_equal
           ~cmp:[%eq: Rule.t] ~printer:[%show: Rule.t]
-          r' (abstract_rule r)
+          r' (maximal_rule_schema r)
       );
 
     "Abstract rule with PUSH (Val n) and PUSH (Const x)">::(fun _ ->
@@ -117,7 +117,7 @@ let suite = "suite" >::: [
         let r' = {lhs = [PUSH (Const "w_1"); PUSH (Const "x"); ADD]; rhs = [PUSH (Const "x")]} in
         assert_equal
           ~cmp:[%eq: Rule.t] ~printer:[%show: Rule.t]
-          r' (abstract_rule r)
+          r' (maximal_rule_schema r)
       );
 
     "Show system in TPDB format produces expected string" >:: (fun _ ->

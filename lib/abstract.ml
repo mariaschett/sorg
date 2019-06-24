@@ -100,7 +100,7 @@ let get_next_abstraction ls c =
     Some (s, c <&> forbid_subst s)
 
 let all_valid_abstractions r =
-  let gr = Rule.abstract_rule r in
+  let gr = maximal_rule_schema r in
   let s = Option.value_exn (Subst.match_opt (gr.lhs @ gr.rhs) (r.lhs @ r.rhs)) in
   let evs = mk_enc_vars s in
   let ls = enc_literals_map evs in
