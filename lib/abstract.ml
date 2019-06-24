@@ -100,13 +100,13 @@ let get_next_abstraction ls c =
     Some (s, c <&> forbid_subst s)
 
 let all_valid_abstractions r =
-  let gr = maximal_rule_schema r in
-  let s = Option.value_exn (Subst.match_opt (gr.lhs @ gr.rhs) (r.lhs @ r.rhs)) in
-  let evs = mk_enc_vars s in
+  let r_0 = maximal_rule_schema r in
+  let s_0 = Option.value_exn (Subst.match_opt (r_0.lhs @ r_0.rhs) (r.lhs @ r.rhs)) in
+  let evs = mk_enc_vars s_0 in
   let ls = enc_literals_map evs in
-  let c = enc_abstract_rule gr evs in
+  let c = enc_abstract_rule r_0 evs in
   let rec abstractions ss c = match get_next_abstraction ls c with
     | None -> ss
     | Some (s, c) -> abstractions (s :: ss) c
   in
-  List.map (abstractions [] c) ~f:(Rule.apply gr)
+  List.map (abstractions [] c) ~f:(Rule.apply r_0)
