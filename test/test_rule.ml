@@ -56,65 +56,69 @@ let suite = "suite" >::: [
 
     (* instruction_schema *)
 
-    "Non-PUSH is not abstracted">::(fun _ ->
-        let i = ADD and w = "w_0" in
+    "Non-PUSH is a schema">::(fun _ ->
+        let i = ADD and x = "x_0" in
         assert_equal
           ~cmp:[%eq: Instruction.t option] ~printer:[%show: Instruction.t option]
-          None (instruction_schema w i)
+          None (instruction_schema x i)
       );
 
-    "PUSH (Const x) instruction is already abstract and not abstracted">::(fun _ ->
-        let i = PUSH (Const "x") and w = "w_0" in
+    "PUSH (Const x) instruction is already a schema">::(fun _ ->
+        let i = PUSH (Const "x") and x = "x_0" in
         assert_equal
           ~cmp:[%eq: Instruction.t option] ~printer:[%show: Instruction.t option]
-          None (instruction_schema w i)
+          None (instruction_schema x i)
       );
 
-    "PUSH (Val 0) instruction is abstracted">::(fun _ ->
-        let i = PUSH (Val "0") and w = "w_0" in
+    "PUSH (Val 0) instruction needs to become a schema">::(fun _ ->
+        let i = PUSH (Val "0") and x = "x_0" in
         assert_equal
           ~cmp:[%eq: Instruction.t option] ~printer:[%show: Instruction.t option]
-          (Some (PUSH (Const w))) (instruction_schema w i)
+          (Some (PUSH (Const x))) (instruction_schema x i)
       );
 
-    (* abstract program *)
+    (* maximal_program_schema *)
 
-    "Abstract empty program">::(fun _ ->
+    "Empty program is a maximal program schema">::(fun _ ->
         let p = [] in
         assert_equal
           ~cmp:[%eq: int * Program.t] ~printer:[%show: int * Program.t]
           (0, p) (maximal_program_schema 0 p)
       );
 
-    "Abstract program without PUSH">::(fun _ ->
+    "A program without PUSH is a maximal program schema">::(fun _ ->
         let p = [DUP I; SWAP I] in
         assert_equal
           ~cmp:[%eq: int * Program.t] ~printer:[%show: int * Program.t]
           (0, p) (maximal_program_schema 0 p)
       );
 
-    "Abstract program with PUSH (Val n) and PUSH (Const c) instructions">::(fun _ ->
+    "Compute a program schema with PUSH (Val n) and PUSH (Const c)">::(fun _ ->
         let p = [PUSH (Val "1"); PUSH (Val "3"); PUSH (Const "c")] in
-        let p' = [PUSH (Const "w_1"); PUSH (Const "w_2"); PUSH (Const "c")] in
+        let p' = [PUSH (Const "x_1"); PUSH (Const "x_2"); PUSH (Const "c")] in
         assert_equal
         ~cmp:(fun (i, p) (i', p') -> i = i' && alpha_equal p p')
         ~printer:[%show: int * Program.t]
         (2, p') (maximal_program_schema 0 p)
       );
 
-    (* abstract rule *)
+    (* maximal_rule_schema *)
 
-    "Abstract rule with only PUSH (Val n)">::(fun _ ->
-        let r = {lhs = [PUSH (Val "0"); PUSH (Val "0"); ADD]; rhs = [PUSH (Val "0")]} in
-        let r' = {lhs = [PUSH (Const "w_1"); PUSH (Const "w_2"); ADD]; rhs = [PUSH (Const "w_3")]} in
+    "Compute a rule schema with only PUSH (Val n)">::(fun _ ->
+        let r = {lhs = [PUSH (Val "0"); PUSH (Val "0"); ADD];
+                 rhs = [PUSH (Val "0")]} in
+        let r' = {lhs = [PUSH (Const "x_1"); PUSH (Const "x_2"); ADD];
+                  rhs = [PUSH (Const "x_3")]} in
         assert_equal
           ~cmp:[%eq: Rule.t] ~printer:[%show: Rule.t]
           r' (maximal_rule_schema r)
       );
 
-    "Abstract rule with PUSH (Val n) and PUSH (Const x)">::(fun _ ->
-        let r = {lhs = [PUSH (Val "0"); PUSH (Const "x"); ADD]; rhs = [PUSH (Const "x")]} in
-        let r' = {lhs = [PUSH (Const "w_1"); PUSH (Const "x"); ADD]; rhs = [PUSH (Const "x")]} in
+    "Compute a rule with PUSH (Val n) and PUSH (Const x)">::(fun _ ->
+        let r = {lhs = [PUSH (Val "0"); PUSH (Const "x"); ADD];
+                 rhs = [PUSH (Const "x")]} in
+        let r' = {lhs = [PUSH (Const "x_1"); PUSH (Const "x"); ADD];
+                  rhs = [PUSH (Const "x")]} in
         assert_equal
           ~cmp:[%eq: Rule.t] ~printer:[%show: Rule.t]
           r' (maximal_rule_schema r)
