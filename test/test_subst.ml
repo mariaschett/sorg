@@ -8,7 +8,27 @@ open Subst
 let x = "x" and y = "y" and z = "z"
 let x_v = Const x and y_v = Const y and z_v = Const z
 
+let comp_vvars vs vs' =
+  let sort = List.sort ~compare:compare_vvar in
+  [%eq: vvar list] (sort vs) (sort vs')
+
+let show_vvars vs =
+  let sort = List.sort ~compare:compare_vvar in
+  [%show: vvar list] (sort vs)
+
 let suite = "suite" >::: [
+
+    (* dom *)
+
+    "Domain of empty substitution is empyty">::(fun _ ->
+        assert_equal [] (dom [])
+      );
+
+    "Domain of substitution">::(fun _ ->
+        assert_equal
+          ~cmp:comp_vvars ~printer:show_vvars
+          [x; y] (dom [(x, Val "0"); (y, Val "0")])
+      );
 
     (* is_mapped *)
 
