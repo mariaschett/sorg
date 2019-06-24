@@ -59,14 +59,3 @@ let pp_tpdb fmt ?(var="P") r =
 
 let show_tpdb ?(var="P") r =
   pp_tpdb Format.str_formatter ~var:var r |> Format.flush_str_formatter
-
-let pp_tpdb_system fmt ?(var="P") rs =
-  let vars = List.stable_dedup (List.concat_map rs ~f:consts) in
-  Format.fprintf fmt "@[<v>(VAR@[<hov>";
-  List.iter vars ~f:(fun v -> Format.fprintf fmt "@ %s" v);
-  Format.fprintf fmt "@])@,(RULES@,@[<v>";
-  List.iter rs ~f:(fun r -> Format.fprintf fmt "  %a@," (pp_tpdb ~var:var) r);
-  Format.fprintf fmt "@])@]"
-
-let show_tpdb_system ?(var="P") rs =
-  pp_tpdb_system Format.str_formatter ~var:var rs |> Format.flush_str_formatter
