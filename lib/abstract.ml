@@ -19,7 +19,7 @@ let mk_enc_var x s =
   { x = x;
     v = v;
     forall = Const (x ^ "'");
-    eqv = List.filter_map (map_to_val v s)
+    eqv = List.filter_map (preimages_to_val v s)
         ~f:(fun y -> if x < y then Some (Const (y ^ "'")) else None);
   }
 
