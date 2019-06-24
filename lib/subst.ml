@@ -1,5 +1,6 @@
 open Core
 open Ebso
+open Instruction
 open Stackarg
 
 type vvar = constarg [@@deriving show { with_path = false }, sexp, compare, equal]
@@ -29,7 +30,7 @@ let update_subst x v s =
 let match_opt p1 p2 =
   let rec match_opt' p1 p2 s = match p1, p2 with
     | [], [] -> Some s
-    | Instruction.PUSH (Const a1) :: t1, Instruction.PUSH v :: t2 ->
+    | PUSH (Const a1) :: t1, PUSH v :: t2 ->
       Option.(update_subst a1 v s >>= match_opt' t1 t2)
     | i1 :: t1, i2 :: t2 when i1 = i2 -> match_opt' t1 t2 s
     | _ -> None
@@ -40,7 +41,7 @@ let map_to_val v s =
 
 let apply p s =
   let apply_instruction = function
-    | Instruction.PUSH (Const x) when in_dom x s -> Instruction.PUSH (map_exn x s)
+    | PUSH (Const x) when in_dom x s -> PUSH (map_exn x s)
     | i -> i
   in
   List.map p ~f:(apply_instruction)
