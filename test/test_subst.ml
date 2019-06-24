@@ -52,22 +52,22 @@ let suite = "suite" >::: [
           y_v (maps_to_exn x [(x, y_v)])
       );
 
-    (* map_extend *)
+    (* extend_maps_to *)
 
     "Extend empty substitution">::(fun _ ->
         assert_equal
           ~cmp:[%eq: Subst.t] ~printer:[%show: Subst.t]
-          [(x, y_v)] (map_extend x y_v [])
+          [(x, y_v)] (extend_maps_to x y_v [])
       );
 
     "Extend substitution">::(fun _ ->
         assert_equal
           ~cmp:[%eq: Subst.t] ~printer:[%show: Subst.t]
-          [(x, y_v); (z, Const "v")] (map_extend x y_v [(z, Const "v")])
+          [(x, y_v); (z, Const "v")] (extend_maps_to x y_v [(z, Const "v")])
       );
 
     "Element is mapped in extended substitution">::(fun _ ->
-        let s = map_extend x "y" [] in
+        let s = extend_maps_to x "y" [] in
         assert_equal
           true (in_dom x s)
       );
@@ -83,7 +83,7 @@ let suite = "suite" >::: [
 
     "Match instruction where unrelated mapping exists">::(fun _ ->
         let s = [(x, y_v)] in
-        let s' = map_extend z (Const "v") s in
+        let s' = extend_maps_to z (Const "v") s in
         assert_equal
           ~cmp:[%eq: Subst.t option] ~printer:[%show: Subst.t option]
           (Some s') (match_instruction (Some s) (PUSH (Const z)) (PUSH (Const "v")))
