@@ -30,18 +30,18 @@ let suite = "suite" >::: [
           [x; y] (dom [(x, Val "0"); (y, Val "0")])
       );
 
-    (* is_mapped *)
+    (* in_dom *)
 
     "Variable is mapped in substitution">::(fun _ ->
-        assert_equal true (is_mapped x [(x, y)])
+        assert_equal true (in_dom x [(x, y)])
       );
 
     "Variable is not mapped in empty substitution">::(fun _ ->
-        assert_equal false (is_mapped x [])
+        assert_equal false (in_dom x [])
       );
 
     "Variable is not mapped in substitution">::(fun _ ->
-        assert_equal false (is_mapped x [(z, y)])
+        assert_equal false (in_dom x [(z, y)])
       );
 
     (* map_exn *)
@@ -69,7 +69,7 @@ let suite = "suite" >::: [
     "Element is mapped in extended substitution">::(fun _ ->
         let s = map_extend x "y" [] in
         assert_equal
-          true (is_mapped x s)
+          true (in_dom x s)
       );
 
     (* update_Subst.t *)

@@ -14,7 +14,7 @@ let equal s1 s2 = List.equal [%eq: ventr]
 
 let dom s = List.map s ~f:Tuple.T2.get1
 
-let is_mapped x s = List.Assoc.mem s x ~equal:[%eq: vvar]
+let in_dom x s = List.Assoc.mem s x ~equal:[%eq: vvar]
 
 let map_exn x s = List.Assoc.find_exn s x ~equal:[%eq: vvar]
 
@@ -22,7 +22,7 @@ let map_exn x s = List.Assoc.find_exn s x ~equal:[%eq: vvar]
 let map_extend x v s = List.Assoc.add s x v ~equal:[%eq: vvar]
 
 let update_subst x v s =
-  if not (is_mapped x s)
+  if not (in_dom x s)
   then Some (map_extend x v s)
   else if (map_exn x s) = v then (Some s) else None
 
@@ -40,7 +40,7 @@ let map_to_val v s =
 
 let apply p s =
   let apply_instruction = function
-    | Instruction.PUSH (Const x) when is_mapped x s -> Instruction.PUSH (map_exn x s)
+    | Instruction.PUSH (Const x) when in_dom x s -> Instruction.PUSH (map_exn x s)
     | i -> i
   in
   List.map p ~f:(apply_instruction)
