@@ -22,19 +22,17 @@ let map_exn x s = List.Assoc.find_exn s x ~equal:[%eq: vvar]
 (* only extend if is_mapped x s is false *)
 let map_extend x v s = List.Assoc.add s x v ~equal:[%eq: vvar]
 
-let update_subst x v s =
-  if not (in_dom x s)
-  then Some (map_extend x v s)
-  else if (map_exn x s) = v then (Some s) else None
+let match_instruction s p1 p2 = match s, p1, p2 with
+  | Some s', PUSH (Const x), PUSH w when not (in_dom x s') -> Some (map_extend x w s')
+  | Some s', PUSH (Const x), PUSH w when (map_exn x s') = w -> s
+  | Some _, i1, i2 when i1 = i2 -> s
+  | _ -> None
 
 let match_opt p1 p2 =
-  let rec match_opt' p1 p2 s = match p1, p2 with
-    | [], [] -> Some s
-    | PUSH (Const a1) :: t1, PUSH v :: t2 ->
-      Option.(update_subst a1 v s >>= match_opt' t1 t2)
-    | i1 :: t1, i2 :: t2 when i1 = i2 -> match_opt' t1 t2 s
-    | _ -> None
-  in match_opt' p1 p2 []
+  let match_prefix = List.fold2 p1 p2 ~init:(Some []) ~f:match_instruction in
+  match match_prefix with
+  | Ok s -> s
+  | Unequal_lengths -> None
 
 let map_to_val v s =
   List.fold s ~init:[] ~f:(fun xs (x,v') -> if v = v' then x :: xs else xs)

@@ -72,28 +72,28 @@ let suite = "suite" >::: [
           true (in_dom x s)
       );
 
-    (* update_Subst.t *)
+    (* match_instruction *)
 
-    "Update substitution where same mapping exists">::(fun _ ->
+    "Match instruction where same mapping exists">::(fun _ ->
         let s = [(x, y_v)] in
         assert_equal
           ~cmp:[%eq: Subst.t option] ~printer:[%show: Subst.t option]
-          (Some s) (update_subst x y_v s)
+          (Some s) (match_instruction (Some s) (PUSH (Const x)) (PUSH y_v))
       );
 
-    "Update substitution where different mapping exists">::(fun _ ->
+    "Match instruction where unrelated mapping exists">::(fun _ ->
         let s = [(x, y_v)] in
         let s' = map_extend z (Const "v") s in
         assert_equal
           ~cmp:[%eq: Subst.t option] ~printer:[%show: Subst.t option]
-          (Some s') (update_subst z (Const "v") s)
+          (Some s') (match_instruction (Some s) (PUSH (Const z)) (PUSH (Const "v")))
       );
 
     "Fail when different mapping is inserted">::(fun _ ->
         let s = [(x, y_v)] in
         assert_equal
           ~cmp:[%eq: Subst.t option] ~printer:[%show: Subst.t option]
-          None (update_subst x (Const "v") s)
+          None (match_instruction (Some s) (PUSH (Const x)) (PUSH (Const "v")))
       );
 
     "Fail when two different instructions are at same position">::(fun _ ->
