@@ -3,6 +3,7 @@ open OUnit2
 open Ebso
 open Z3util
 open Stackarg
+open Instruction
 open Evmenc
 open Subst
 open Rule
@@ -24,7 +25,11 @@ let show_enc_var ex =
   [%show: vval list] (List.sort ~compare:compare_vval ex.eqv)
 
 let sort_rules rs =
-  let compare_rule r1 r2 = List.compare Instruction.compare (r1.lhs @ r1.rhs) (r2.lhs @ r2.rhs) in
+  let compare_instr i1 i2 = match (i1, i2) with
+    | PUSH x, PUSH y -> Stackarg.compare x y
+    | _, _ -> Instruction.compare i1 i2
+  in
+  let compare_rule r1 r2 = List.compare compare_instr (r1.lhs @ r1.rhs) (r2.lhs @ r2.rhs) in
   List.sort ~compare:compare_rule rs
 
 let suite = "suite" >::: [
