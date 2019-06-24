@@ -19,7 +19,7 @@ let in_dom x s = List.Assoc.mem s x ~equal:[%eq: vvar]
 
 let map_exn x s = List.Assoc.find_exn s x ~equal:[%eq: vvar]
 
-(* only extend if is_mapped x s is false *)
+(* only extend if in_dom x s is false *)
 let map_extend x v s = List.Assoc.add s x v ~equal:[%eq: vvar]
 
 let match_instruction s p1 p2 = match s, p1, p2 with
