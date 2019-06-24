@@ -17,14 +17,14 @@ let dom s = List.map s ~f:Tuple.T2.get1
 
 let in_dom x s = List.Assoc.mem s x ~equal:[%eq: vvar]
 
-let map_exn x s = List.Assoc.find_exn s x ~equal:[%eq: vvar]
+let maps_to_exn x s = List.Assoc.find_exn s x ~equal:[%eq: vvar]
 
 (* only extend if in_dom x s is false *)
 let map_extend x v s = List.Assoc.add s x v ~equal:[%eq: vvar]
 
 let match_instruction s p1 p2 = match s, p1, p2 with
   | Some s', PUSH (Const x), PUSH w when not (in_dom x s') -> Some (map_extend x w s')
-  | Some s', PUSH (Const x), PUSH w when (map_exn x s') = w -> s
+  | Some s', PUSH (Const x), PUSH w when (maps_to_exn x s') = w -> s
   | Some _, i1, i2 when i1 = i2 -> s
   | _ -> None
 
@@ -39,7 +39,7 @@ let map_to_val v s =
 
 let apply p s =
   let apply_instruction = function
-    | PUSH (Const x) when in_dom x s -> PUSH (map_exn x s)
+    | PUSH (Const x) when in_dom x s -> PUSH (maps_to_exn x s)
     | i -> i
   in
   List.map p ~f:(apply_instruction)

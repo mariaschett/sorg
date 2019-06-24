@@ -15,7 +15,7 @@ type enc_var = {
 }
 
 let mk_enc_var x s =
-  let v = map_exn x s in
+  let v = maps_to_exn x s in
   { x = x;
     v = v;
     forall = Const (x ^ "'");

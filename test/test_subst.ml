@@ -44,12 +44,12 @@ let suite = "suite" >::: [
         assert_equal false (in_dom x [(z, y)])
       );
 
-    (* map_exn *)
+    (* maps_to_exn *)
 
     "Map when exists in substitution">::(fun _ ->
         assert_equal
           ~cmp:[%eq: vval] ~printer:[%show: vval]
-          y_v (map_exn x [(x, y_v)])
+          y_v (maps_to_exn x [(x, y_v)])
       );
 
     (* map_extend *)
