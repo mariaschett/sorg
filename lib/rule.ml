@@ -15,7 +15,8 @@ let alpha_equal p1 p2 = match (match_opt p1 p2, match_opt p2 p1) with
 let equal r1 r2 =
   alpha_equal (r1.lhs @ r1.rhs) (r2.lhs @ r2.rhs)
 
-let pp fmt r = Format.fprintf fmt "@[%a -> %a@]" Program.pp_h r.lhs Program.pp_h r.rhs
+let pp fmt r =
+  Format.fprintf fmt "@[%a => %a@]" Program.pp_h r.lhs Program.pp_h r.rhs
 
 let show r = pp Format.str_formatter r |> Format.flush_str_formatter
 
