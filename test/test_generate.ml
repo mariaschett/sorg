@@ -1,5 +1,5 @@
 open Rule
-open Generalize
+open Generate
 open Ebso
 open Instruction
 open OUnit2
