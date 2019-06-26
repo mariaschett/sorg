@@ -65,7 +65,7 @@ let suite = "suite" >::: [
         assert_equal
           ~cmp:(String.Map.equal [%eq: ventr])
           ~printer:(fun m -> String.Map.sexp_of_t sexp_of_ventr m |> Sexp.to_string)
-        (String.Map.of_alist_exn m) (enc_literals_map (mk_enc_vars s))
+        (String.Map.of_alist_exn m) (literals_map (mk_enc_vars s))
       );
 
     (* enc_literals_atleastone *)

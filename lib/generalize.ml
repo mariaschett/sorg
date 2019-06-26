@@ -28,14 +28,14 @@ let mk_enc_vars s = List.map (dom s) ~f:(fun x -> mk_enc_var x s)
 let proxy_name x y =  "b_" ^ x ^ "_" ^ [%show: vval] y
 
 (* bxx'-> (x, Var 0) ...*)
-let enc_literals_map evs =
-  let enc_literal_map m ev =
+let literals_map evs =
+  let literal_map m ev =
     List.fold ev.eqv ~init:m
       ~f:(fun m y -> Map.add_exn m ~key:(proxy_name ev.x y) ~data:(ev.x, y))
     |> Map.add_exn ~key:(proxy_name ev.x ev.v) ~data:(ev.x, ev.v)
     |> Map.add_exn ~key:(proxy_name ev.x ev.forall) ~data:(ev.x, ev.forall)
   in
-  List.fold evs ~init:String.Map.empty ~f:enc_literal_map
+  List.fold evs ~init:String.Map.empty ~f:literal_map
 
 let enc_literals_atleastone evs =
   let enc_literal_atleastone ev =
@@ -55,7 +55,7 @@ let enc_literals_def evs =
     let open Z3Ops in
     boolconst l ==> (seconst x == z3_const v)
   in
-  Map.fold (enc_literals_map evs)
+  Map.fold (literals_map evs)
     ~init:top ~f:(fun ~key:l ~data:(x, v) c -> c <&> mk_def l x v)
 
 let enc_rule_valid r =
@@ -97,7 +97,7 @@ let generalize r =
   let r_0 = maximal_rule_schema r in
   let s_0 = Option.value_exn (Subst.match_opt (r_0.lhs @ r_0.rhs) (r.lhs @ r.rhs)) in
   let evs = mk_enc_vars s_0 in
-  let ls = enc_literals_map evs in
+  let ls = literals_map evs in
   let c = enc_generalize r_0 evs in
   let rec substs ss c = match find_different_subst ls c with
     | None -> ss
