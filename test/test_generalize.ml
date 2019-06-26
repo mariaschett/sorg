@@ -95,11 +95,11 @@ let suite = "suite" >::: [
           [0; 0; 0] vals
       );
 
-    (* abstract_rule *)
+    (* generalize *)
 
-    "Find all substitutions for abstracting rule" >:: (fun _ ->
+    "Find all generalizations" >:: (fun _ ->
         let r = {lhs = [PUSH (Val "0")]; rhs = [PUSH (Val "0")]} in
-        let rs = all_valid_abstractions r in
+        let rs = generalize r in
         assert_equal
           ~printer:(fun rs -> [%show: Rule.t list] (sort_rules rs))
           ~cmp:(fun rs rs' -> [%eq: Rule.t list] (sort_rules rs) (sort_rules rs'))
@@ -107,9 +107,9 @@ let suite = "suite" >::: [
           rs
       );
 
-    "Find all substitutions for abstracting rule" >:: (fun _ ->
+    "Find all generalizations" >:: (fun _ ->
         let r = {lhs = [PUSH (Val "0"); PUSH (Val "0"); ADD]; rhs = [PUSH (Val "0")]} in
-        let rs = all_valid_abstractions r in
+        let rs = generalize r in
         assert_equal
           ~printer:(fun rs -> [%show: Rule.t list] (sort_rules rs))
           ~cmp:(fun rs rs' -> [%eq: Rule.t list] (sort_rules rs) (sort_rules rs'))

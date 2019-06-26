@@ -77,7 +77,7 @@ let enc_rule_valid r =
                    stt.used_gas @@ (forall_vars ea @ [num 0]) &&
    (enc_equivalence_at ea sts stt ks kt))
 
-let enc_abstract_rule r evs =
+let enc_generalize r evs =
   foralls (List.map evs ~f:(fun ev -> z3_const ev.forall)) (
     existss (List.map evs ~f:(fun ev -> seconst @@ ev.x)) (
       enc_literals_atleastone evs <&> enc_rule_valid r
@@ -85,28 +85,28 @@ let enc_abstract_rule r evs =
     )
   )
 
-let dec_abstract_rule m ls =
+let dec_generalize m ls =
   Map.fold ls ~init:[] ~f:(fun ~key:l ~data:xv s ->
       if Z3.Boolean.is_true (eval_const m (boolconst l)) then xv :: s else s)
 
 let forbid_subst s =
   ~! (conj (List.map s ~f:(fun (x, v) -> boolconst @@ literal_name x v)))
 
-let get_next_abstraction ls c =
+let find_different_subst ls c =
   match solve_model [c] with
   | None -> None
   | Some m ->
-    let s = dec_abstract_rule m ls in
+    let s = dec_generalize m ls in
     Some (s, c <&> forbid_subst s)
 
-let all_valid_abstractions r =
+let generalize r =
   let r_0 = maximal_rule_schema r in
   let s_0 = Option.value_exn (Subst.match_opt (r_0.lhs @ r_0.rhs) (r.lhs @ r.rhs)) in
   let evs = mk_enc_vars s_0 in
   let ls = enc_literals_map evs in
-  let c = enc_abstract_rule r_0 evs in
-  let rec abstractions ss c = match get_next_abstraction ls c with
+  let c = enc_generalize r_0 evs in
+  let rec substs ss c = match find_different_subst ls c with
     | None -> ss
-    | Some (s, c) -> abstractions (s :: ss) c
+    | Some (s, c) -> substs (s :: ss) c
   in
-  List.map (abstractions [] c) ~f:(Rule.apply r_0)
+  List.map (substs [] c) ~f:(Rule.apply r_0)
