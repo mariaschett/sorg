@@ -6,6 +6,10 @@ open Stackarg
 open Rule
 open Subst
 
+let proxy_name x y =  "p_" ^ x ^ "_" ^ [%show: vval] y
+
+let for_all_name x = x ^ "'"
+
 (* to construct the constraints for a variable *)
 type enc_var = {
   x : vvar;
@@ -18,14 +22,12 @@ let mk_enc_var x s =
   let v = maps_to_exn x s in
   { x = x;
     v = v;
-    forall = Const (x ^ "'");
+    forall = Const (for_all_name x);
     eqv = List.filter_map (preimages_to_val v s)
         ~f:(fun y -> if x < y then Some (Const (y ^ "'")) else None);
   }
 
 let mk_enc_vars s = List.map (dom s) ~f:(fun x -> mk_enc_var x s)
-
-let proxy_name x y =  "p_" ^ x ^ "_" ^ [%show: vval] y
 
 let enc_proxy x v = boolconst @@ proxy_name x v
 
