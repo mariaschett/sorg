@@ -81,10 +81,10 @@ let suite = "suite" >::: [
           (List.length s)  (List.length trues)
       );
 
-    (* enc_literals_def *)
+    (* enc_proxy_assigns *)
 
-    "Check model for defining literals" >:: (fun _ ->
-        let c = enc_literals_def (mk_enc_vars s) in
+    "Check model for assigning proxys" >:: (fun _ ->
+        let c = enc_proxy_assigns (mk_enc_vars s) in
         let c = c <&> conj @@ List.map ss ~f:(fun (x, v) -> boolconst (proxy_name x v)) in
         let m = solve_model_exn [c] in
         let vals =

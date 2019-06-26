@@ -50,7 +50,7 @@ let enc_vval = function
   | Const y -> seconst y
   | Tmpl -> failwith "No Template variables allowed"
 
-let enc_literals_def evs =
+let enc_proxy_assigns evs =
   let mk_def l x v =
     let open Z3Ops in
     boolconst l ==> (seconst x == enc_vval v)
@@ -75,7 +75,7 @@ let enc_generalize r evs =
   foralls (List.map evs ~f:(fun ev -> enc_vval ev.forall)) (
     existss (List.map evs ~f:(fun ev -> seconst @@ ev.x)) (
       enc_at_least_one_per_proxy evs <&> enc_rule_valid r
-      <&> enc_literals_def evs
+      <&> enc_proxy_assigns evs
     )
   )
 
