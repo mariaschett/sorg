@@ -84,7 +84,7 @@ let find_different_subst ls c =
     let s = dec_generalize m ls in
     Some (s, c <&> enc_exclude_subst s)
 
-let generalize r =
+let generalize_all r =
   let r_0 = maximal_rule_schema r in
   let s_0 = Option.value_exn (Subst.match_opt (r_0.lhs @ r_0.rhs) (r.lhs @ r.rhs)) in
   let ps = proxy_assigns s_0 in

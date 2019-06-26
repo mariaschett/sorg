@@ -86,7 +86,7 @@ let suite = "suite" >::: [
           [0; 0; 0] vals
       );
 
-    (* generalize *)
+    (* generalize_all *)
 
     "No generalization possible">::(fun _ ->
         let s = [PUSH (Val "0"); ADD] and t = [] in
@@ -94,12 +94,12 @@ let suite = "suite" >::: [
         in
         assert_equal
           ~cmp:[%eq: Rule.t list] ~printer:[%show: Rule.t list]
-          [r] (generalize r)
+          [r] (generalize_all r)
       );
 
     "Find all generalizations" >:: (fun _ ->
         let r = {lhs = [PUSH (Val "0")]; rhs = [PUSH (Val "0")]} in
-        let rs = generalize r in
+        let rs = generalize_all r in
         assert_equal
           ~printer:(fun rs -> [%show: Rule.t list] (sort_rules rs))
           ~cmp:(fun rs rs' -> [%eq: Rule.t list] (sort_rules rs) (sort_rules rs'))
@@ -109,7 +109,7 @@ let suite = "suite" >::: [
 
     "Find all generalizations" >:: (fun _ ->
         let r = {lhs = [PUSH (Val "0"); PUSH (Val "0"); ADD]; rhs = [PUSH (Val "0")]} in
-        let rs = generalize r in
+        let rs = generalize_all r in
         assert_equal
           ~printer:(fun rs -> [%show: Rule.t list] (sort_rules rs))
           ~cmp:(fun rs rs' -> [%eq: Rule.t list] (sort_rules rs) (sort_rules rs'))
