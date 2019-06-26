@@ -169,20 +169,20 @@ let suite = "suite" >::: [
         assert_equal false (maps_to_val "y" (Val "0") s)
       );
 
-    (* preimages_to_val *)
+    (* preimages_of_val *)
 
     "No variable maps to value">::(fun _ ->
         let s = [("x", Val "0"); ("y", Val "1")] in
         assert_equal
           ~cmp:[%eq: vvar list] ~printer:[%show: vvar list]
-          [] (preimages_to_val (Val "2") s)
+          [] (preimages_of_val (Val "2") s)
       );
 
     "Only one variable maps to value">::(fun _ ->
         let s = [("x", Val "0"); ("y", Val "1")] in
         assert_equal
           ~cmp:[%eq: vvar list] ~printer:[%show: vvar list]
-          ["y"] (preimages_to_val (Val "1") s)
+          ["y"] (preimages_of_val (Val "1") s)
       );
 
     "Two variables map to same">::(fun _ ->
@@ -192,7 +192,7 @@ let suite = "suite" >::: [
                    (List.sort ~compare:compare_vvar xs)
                    (List.sort ~compare:compare_vvar ys))
           ~printer:[%show: vvar list]
-          ["x"; "y"] (preimages_to_val (Val "0") s)
+          ["x"; "y"] (preimages_of_val (Val "0") s)
       );
 
     "Two variables map to same, one different">::(fun _ ->
@@ -202,7 +202,7 @@ let suite = "suite" >::: [
                    (List.sort ~compare:compare_vvar xs)
                    (List.sort ~compare:compare_vvar ys))
           ~printer:[%show: vvar list]
-          ["x"; "y"] (preimages_to_val (Val "0") s)
+          ["x"; "y"] (preimages_of_val (Val "0") s)
       );
 
     (* apply *)

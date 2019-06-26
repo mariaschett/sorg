@@ -14,7 +14,7 @@ let for_all_vval x = Const (for_all_name x)
 
 let eqv x s =
   let v = maps_to_exn x s in
-  List.filter_map (preimages_to_val v s)
+  List.filter_map (preimages_of_val v s)
         ~f:(fun y -> if x < y then Some (for_all_vval y) else None)
 
 (* to construct the constraints for a variable *)
