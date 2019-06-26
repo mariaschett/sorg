@@ -102,15 +102,15 @@ let suite = "suite" >::: [
           (s, t) (strip_suffix s t)
       );
 
-    (* abstract_push_args *)
+    (* generalize *)
 
     "No abstraction possible">::(fun _ ->
-        todo "abstract_push_args not implemented";
+        todo "generalize not implemented";
         let s = [PUSH (Val "0"); ADD] and t = []
         in
         assert_equal
           ~cmp:[%eq: Rule.t list] ~printer:[%show: Rule.t list]
-          [{lhs = s; rhs = t}] (abstract_push_args s t)
+          [{lhs = s; rhs = t}] (generalize s t)
       );
 
     (* generate_rules *)
