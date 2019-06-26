@@ -1,5 +1,5 @@
 (executables
- (names test_generate test_rule test_rewrite_system test_subst test_abstract)
+ (names test_generate test_rule test_rewrite_system test_subst test_generalize)
  (libraries core ebso oUnit sorg)
  (preprocess (pps ppx_deriving.std))
 )
@@ -30,6 +30,6 @@
 
 (alias
  (name runtest)
- (deps (:x test_abstract.exe))
+ (deps (:x test_generalize.exe))
  (action (run %{x}))
 )

@@ -7,7 +7,7 @@ open Instruction
 open Evmenc
 open Subst
 open Rule
-open Abstract
+open Generalize
 
 let s = [("x",Val "0"); ("y",Val "0"); ("z",Val "0"); ]
 
