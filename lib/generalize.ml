@@ -17,42 +17,24 @@ let eqv x s =
   List.filter_map (preimages_of_val v s)
         ~f:(fun y -> if x < y then Some (for_all_vval y) else None)
 
-(* to construct the constraints for a variable *)
-type enc_var = {
-  x : vvar;
-  v : vval;
-  eqv : vval list; (* contains only smaller variables *)
-}
-
-let mk_enc_var x s =
-  let v = maps_to_exn x s in
-  { x = x;
-    v = v;
-    eqv = eqv x s;
-  }
-
-let mk_enc_vars s = List.map (dom s) ~f:(fun x -> mk_enc_var x s)
-
-let proxy_assigns evs =
+let proxy_assigns s =
   let add_assign x v m = Map.add_exn m ~key:(proxy_name x v) ~data:(x, v) in
-  let assign_proxy m ev =
-    let x = ev.x in
-    let v = ev.v in
-    List.fold ev.eqv ~init:m ~f:(fun m y -> add_assign x y m)
+  let assign_proxy m x =
+    let v = maps_to_exn x s in
+    List.fold (eqv x s) ~init:m ~f:(fun m y -> add_assign x y m)
     |> add_assign x v
     |> add_assign x (for_all_vval x)
   in
-  List.fold evs ~init:String.Map.empty ~f:assign_proxy
+  List.fold (dom s) ~init:String.Map.empty ~f:assign_proxy
 
-let enc_at_least_one ev =
-  let x = ev.x in
+let enc_at_least_one s x =
   disj @@
-  [ enc_proxy x ev.v
+  [ enc_proxy x (maps_to_exn x s)
   ; enc_proxy x (for_all_vval x)
-  ] @ List.map ev.eqv ~f:(enc_proxy x)
+  ] @ List.map (eqv x s) ~f:(enc_proxy x)
 
-let enc_at_least_one_per_proxy evs =
-  conj @@ List.map evs ~f:enc_at_least_one
+let enc_at_least_one_per_proxy s =
+  conj @@ List.map (dom s) ~f:(enc_at_least_one s)
 
 let enc_vval = function
   | Val n -> senum_string n
@@ -80,11 +62,11 @@ let enc_rule_valid r =
                    stt.used_gas @@ (forall_vars ea @ [num 0]) &&
    (enc_equivalence_at ea sts stt ks kt))
 
-let enc_generalize r evs =
-  foralls (List.map evs ~f:(fun ev -> enc_vval (for_all_vval ev.x))) (
-    existss (List.map evs ~f:(fun ev -> seconst @@ ev.x)) (
-      enc_at_least_one_per_proxy evs <&> enc_rule_valid r
-      <&> enc_proxy_assigns evs
+let enc_generalize r s =
+  foralls (List.map (dom s) ~f:(fun x -> enc_vval (for_all_vval x))) (
+    existss (List.map (dom s) ~f:(fun x -> seconst @@ x)) (
+      enc_at_least_one_per_proxy s <&> enc_rule_valid r
+      <&> enc_proxy_assigns s
     )
   )
 
@@ -105,9 +87,8 @@ let find_different_subst ls c =
 let generalize r =
   let r_0 = maximal_rule_schema r in
   let s_0 = Option.value_exn (Subst.match_opt (r_0.lhs @ r_0.rhs) (r.lhs @ r.rhs)) in
-  let evs = mk_enc_vars s_0 in
-  let ps = proxy_assigns evs in
-  let c = enc_generalize r_0 evs in
+  let ps = proxy_assigns s_0 in
+  let c = enc_generalize r_0 s_0 in
   let rec substs ss c = match find_different_subst ps c with
     | None -> ss
     | Some (s, c) -> substs (s :: ss) c

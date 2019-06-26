@@ -16,14 +16,6 @@ let ss =
    ("y",Val "0"); ("y",Const "z'"); ("y",Const "y'");
    ("z",Val "0"); ("z",Const "z'")]
 
-let eq_enc_var ex ey =
-  ex.x = ey.x && ex.v = ey.v &&
-  (List.sort ~compare:compare_vval ex.eqv) = (List.sort ~compare:(compare_vval) ey.eqv)
-
-let show_enc_var ex =
-  "x = " ^ ex.x ^ "; v = " ^ [%show: vval] ex.v ^ "; forall = " ^ "; eqv = " ^
-  [%show: vval list] (List.sort ~compare:compare_vval ex.eqv)
-
 let sort_rules rs =
   let compare_instr i1 i2 = match (i1, i2) with
     | PUSH x, PUSH y -> Stackarg.compare x y
@@ -36,26 +28,25 @@ let suite = "suite" >::: [
 
     (* mk_enc_var *)
 
-    "Make encoding for x" >::(fun _ ->
+    "Make eqv for x" >::(fun _ ->
         assert_equal
-          ~cmp:eq_enc_var
-          ~printer:show_enc_var
-          {x = "x"; v = Val "0"; eqv = [Const "y'"; Const "z'"]}
-          (mk_enc_var "x" s)
+          ~cmp:[%eq: vval list]
+          ~printer:[%show: vval list]
+          [Const "y'"; Const "z'"] (eqv "x" s)
       );
 
-      "Make encoding for y" >::(fun _ ->
-          assert_equal
-            ~cmp:eq_enc_var
-            ~printer:show_enc_var
-            {x = "y"; v = Val "0"; eqv = [Const "z'"]} (mk_enc_var "y" s)
+      "Make eqv for y" >::(fun _ ->
+        assert_equal
+          ~cmp:[%eq: vval list]
+          ~printer:[%show: vval list]
+          [Const "z'"] (eqv "y" s)
       );
 
-    "Make encoding for z" >::(fun _ ->
-          assert_equal
-            ~cmp:eq_enc_var
-            ~printer:show_enc_var
-            {x = "z"; v = Val "0";  eqv = []} (mk_enc_var "z" s)
+    "Make eqv for z" >::(fun _ ->
+        assert_equal
+          ~cmp:[%eq: vval list]
+          ~printer:[%show: vval list]
+          [] (eqv "z" s)
       );
 
     (* proxy_assigns *)
@@ -65,14 +56,14 @@ let suite = "suite" >::: [
         assert_equal
           ~cmp:(String.Map.equal [%eq: ventr])
           ~printer:(fun m -> String.Map.sexp_of_t sexp_of_ventr m |> Sexp.to_string)
-        (String.Map.of_alist_exn m) (proxy_assigns (mk_enc_vars s))
+        (String.Map.of_alist_exn m) (proxy_assigns s)
       );
 
     (* enc_at_least_one_per_proxy *)
 
     "Check model for enc_at_least_one_per_proxy" >:: (fun _ ->
         let names = List.map ss ~f:(fun (x,v) -> (proxy_name x v)) in
-        let m = solve_model_exn [enc_at_least_one_per_proxy (mk_enc_vars s)] in
+        let m = solve_model_exn [enc_at_least_one_per_proxy s] in
         let trues =
           List.filter names
             ~f:(fun n -> Z3.Boolean.is_true @@ eval_const m (boolconst n))
@@ -84,7 +75,7 @@ let suite = "suite" >::: [
     (* enc_proxy_assigns *)
 
     "Check model for assigning proxys" >:: (fun _ ->
-        let c = enc_proxy_assigns (mk_enc_vars s) in
+        let c = enc_proxy_assigns s in
         let c = c <&> conj @@ List.map ss ~f:(fun (x, v) -> boolconst (proxy_name x v)) in
         let m = solve_model_exn [c] in
         let vals =
