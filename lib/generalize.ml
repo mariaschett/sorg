@@ -41,10 +41,11 @@ let proxy_assigns evs =
   List.fold evs ~init:String.Map.empty ~f:assign_proxy
 
 let enc_at_least_one ev =
+  let x = ev.x in
   disj @@
-  [ enc_proxy ev.x ev.v
-  ; enc_proxy ev.x (for_all_vval ev.x)
-  ] @ List.map ev.eqv ~f:(enc_proxy ev.x)
+  [ enc_proxy x ev.v
+  ; enc_proxy x (for_all_vval x)
+  ] @ List.map ev.eqv ~f:(enc_proxy x)
 
 let enc_at_least_one_per_proxy evs =
   conj @@ List.map evs ~f:enc_at_least_one
