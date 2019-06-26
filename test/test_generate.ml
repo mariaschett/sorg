@@ -65,48 +65,39 @@ let suite = "suite" >::: [
     (* strip_prefix *)
 
     "Remove superflous prefix" >::(fun _ ->
-        let s = [POP; PUSH (Val "0"); ADD] in
-        let t = [POP]
+        let r = {lhs = [POP; PUSH (Val "0"); ADD]; rhs = [POP]}
         in
-        assert_equal ~cmp:[%eq: Program.t * Program.t]
-          ~printer:[%show: Program.t * Program.t]
-          ([PUSH (Val "0"); ADD], []) (strip_prefix s t)
+        assert_equal ~cmp:[%eq: Rule.t] ~printer:[%show: Rule.t]
+          {lhs = [PUSH (Val "0"); ADD]; rhs = []} (strip_prefix r)
       );
 
     "Removing prefix is not correct" >::(fun _ ->
-        let s = [CALLVALUE; DUP I] in
-        let t = [CALLVALUE; CALLVALUE]
+        let r = {lhs = [CALLVALUE; DUP I]; rhs = [CALLVALUE; CALLVALUE]}
         in
-        assert_equal ~cmp:[%eq: Program.t * Program.t]
-          ~printer:[%show: Program.t * Program.t]
-          (s, t) (strip_prefix s t)
+        assert_equal ~cmp:[%eq: Rule.t] ~printer:[%show: Rule.t]
+          r (strip_prefix r)
       );
 
     (* strip_suffix *)
 
     "Remove superflous suffix" >::(fun _ ->
-        let s = [PUSH (Val "0"); ADD; POP] in
-        let t = [POP]
+        let r = {lhs = [PUSH (Val "0"); ADD; POP]; rhs = [POP]}
         in
-        assert_equal ~cmp:[%eq: Program.t * Program.t]
-          ~printer:[%show: Program.t * Program.t]
-          ([PUSH (Val "0"); ADD], []) (strip_suffix s t)
+        assert_equal ~cmp:[%eq: Rule.t] ~printer:[%show: Rule.t]
+          {lhs = [PUSH (Val "0"); ADD]; rhs = []} (strip_suffix r)
       );
 
     "Removing suffix is not correct" >::(fun _ ->
-        let s = [PUSH (Val "2"); POP] in
-        let t = [ADDRESS; POP]
+        let r = {lhs = [PUSH (Val "2"); POP]; rhs = [ADDRESS; POP]}
         in
-        assert_equal ~cmp:[%eq: Program.t * Program.t]
-          ~printer:[%show: Program.t * Program.t]
-          (s, t) (strip_suffix s t)
+        assert_equal ~cmp:[%eq: Rule.t] ~printer:[%show: Rule.t]
+          r (strip_suffix r)
       );
 
 
     (* generate_rules *)
 
     "Remove superflous suffix" >::(fun _ ->
-        todo "generate_rules not implemented";
         let s = [CALLVALUE; DUP I; ISZERO] in
         let t = [CALLVALUE; CALLVALUE; ISZERO] in
         let r = {lhs = [CALLVALUE; DUP I];
@@ -118,7 +109,6 @@ let suite = "suite" >::: [
       );
 
     "Generalize PUSH argument" >::(fun _ ->
-        todo "generate_rules not implemented";
         let s = [PUSH (Val "2"); DUP II; SWAP I] and t = [DUP I; PUSH (Val "2")] in
         let r = { lhs = [PUSH (Const "c"); DUP II; SWAP I];
                   rhs = [DUP I; PUSH (Const "c")]}
@@ -130,7 +120,6 @@ let suite = "suite" >::: [
       );
 
     "Remove superflous prefix, abstract PUSH argument" >::(fun _ ->
-        todo "generate_rules not implemented";
         let s = [POP; PUSH (Val "3"); SWAP I; POP] in
         let t = [POP; POP; PUSH (Val "3")] in
         let r = { lhs = [PUSH (Const "c"); SWAP I; POP];
@@ -142,7 +131,6 @@ let suite = "suite" >::: [
       );
 
     "Generalize PUSH args, two rules" >::(fun _ ->
-        todo "generate_rules not implemented";
         let s = [PUSH (Val "0"); PUSH (Val "0"); ADD] in
         let t = [PUSH (Val "0")] in
         let r1 = { lhs = [PUSH (Val "0"); PUSH (Const "c"); ADD];
@@ -156,7 +144,6 @@ let suite = "suite" >::: [
       );
 
     "Advanced constant folding">::(fun _ ->
-        todo "generate_rules not implemented";
         let s = [PUSH (Val "1"); PUSH (Val "2"); DUP II; OR] in
         let t = [PUSH (Val "1"); PUSH (Val "3")]
         in
@@ -166,7 +153,6 @@ let suite = "suite" >::: [
       );
 
     "ADD commutative, combines remove pre-/suffix and generate rules argument" >::(fun _ ->
-        todo "generate_rules not implemented";
         let s = [POP; PUSH (Val "3"); DUP II; ADD; SWAP I; POP; PUSH (Val "2")] in
         let t = [POP; PUSH (Val "3"); ADD; PUSH (Val "2")] in
         let r = { lhs = [PUSH (Const "c"); DUP II; ADD];
