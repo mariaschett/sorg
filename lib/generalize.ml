@@ -30,13 +30,13 @@ let mk_enc_var x s =
 let mk_enc_vars s = List.map (dom s) ~f:(fun x -> mk_enc_var x s)
 
 let proxy_assigns evs =
+  let add_assign x v m = Map.add_exn m ~key:(proxy_name x v) ~data:(x, v) in
   let assign_proxy m ev =
     let x = ev.x in
     let v = ev.v in
-    List.fold ev.eqv ~init:m
-      ~f:(fun m y -> Map.add_exn m ~key:(proxy_name x y) ~data:(x, y))
-    |> Map.add_exn ~key:(proxy_name x v) ~data:(x, v)
-    |> Map.add_exn ~key:(proxy_name x (for_all_vval x)) ~data:(x, for_all_vval x)
+    List.fold ev.eqv ~init:m ~f:(fun m y -> add_assign x y m)
+    |> add_assign x v
+    |> add_assign x (for_all_vval x)
   in
   List.fold evs ~init:String.Map.empty ~f:assign_proxy
 
