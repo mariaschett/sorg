@@ -27,4 +27,4 @@ let rec strip_suffix s t = match List.rev s, List.rev t with
 
 let abstract_push_args _ _ = failwith "abstract_push_args not implemented"
 
-let generalize _ _ = failwith "generalize not implemented"
+let generate_rules _ _ = failwith "generate_rules not implemented"

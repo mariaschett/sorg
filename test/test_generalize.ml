@@ -113,10 +113,10 @@ let suite = "suite" >::: [
           [{lhs = s; rhs = t}] (abstract_push_args s t)
       );
 
-    (* generalize *)
+    (* generate_rules *)
 
     "Remove superflous suffix" >::(fun _ ->
-        todo "generalize not implemented";
+        todo "generate_rules not implemented";
         let s = [CALLVALUE; DUP I; ISZERO] in
         let t = [CALLVALUE; CALLVALUE; ISZERO] in
         let r = {lhs = [CALLVALUE; DUP I];
@@ -124,11 +124,11 @@ let suite = "suite" >::: [
         in
         assert_equal ~cmp:[%eq: Rule.t list]
           ~printer:[%show: Rule.t list]
-          [r] (generalize s t)
+          [r] (generate_rules s t)
       );
 
     "Abstract PUSH argument" >::(fun _ ->
-        todo "generalize not implemented";
+        todo "generate_rules not implemented";
         let s = [PUSH (Val "2"); DUP II; SWAP I] and t = [DUP I; PUSH (Val "2")] in
         let r = { lhs = [PUSH (Const "c"); DUP II; SWAP I];
                   rhs = [DUP I; PUSH (Const "c")]}
@@ -136,11 +136,11 @@ let suite = "suite" >::: [
         assert_equal
           ~cmp:[%eq: Rule.t list]
           ~printer:[%show: Rule.t list]
-          [r] (generalize s t)
+          [r] (generate_rules s t)
       );
 
     "Remove superflous prefix, abstract PUSH argument" >::(fun _ ->
-        todo "generalize not implemented";
+        todo "generate_rules not implemented";
         let s = [POP; PUSH (Val "3"); SWAP I; POP] in
         let t = [POP; POP; PUSH (Val "3")] in
         let r = { lhs = [PUSH (Const "c"); SWAP I; POP];
@@ -148,11 +148,11 @@ let suite = "suite" >::: [
         in
         assert_equal ~cmp:[%eq: Rule.t list]
           ~printer:[%show: Rule.t list]
-          [r] (generalize s t)
+          [r] (generate_rules s t)
       );
 
     "Abstract PUSH args, two rules" >::(fun _ ->
-        todo "generalize not implemented";
+        todo "generate_rules not implemented";
         let s = [PUSH (Val "0"); PUSH (Val "0"); ADD] in
         let t = [PUSH (Val "0")] in
         let r1 = { lhs = [PUSH (Val "0"); PUSH (Const "c"); ADD];
@@ -162,21 +162,21 @@ let suite = "suite" >::: [
         in
         assert_equal ~cmp:[%eq: Rule.t list]
           ~printer:[%show: Rule.t list]
-          [r1; r2] (generalize s t)
+          [r1; r2] (generate_rules s t)
       );
 
     "Advanced constant folding">::(fun _ ->
-        todo "generalize not implemented";
+        todo "generate_rules not implemented";
         let s = [PUSH (Val "1"); PUSH (Val "2"); DUP II; OR] in
         let t = [PUSH (Val "1"); PUSH (Val "3")]
         in
         assert_equal ~cmp:[%eq: Rule.t list]
           ~printer:[%show: Rule.t list]
-          [{lhs = s; rhs = t}] (generalize s t)
+          [{lhs = s; rhs = t}] (generate_rules s t)
       );
 
-    "ADD commutative, combines remove pre-/suffix and generalize argument" >::(fun _ ->
-        todo "generalize not implemented";
+    "ADD commutative, combines remove pre-/suffix and generate rules argument" >::(fun _ ->
+        todo "generate_rules not implemented";
         let s = [POP; PUSH (Val "3"); DUP II; ADD; SWAP I; POP; PUSH (Val "2")] in
         let t = [POP; PUSH (Val "3"); ADD; PUSH (Val "2")] in
         let r = { lhs = [PUSH (Const "c"); DUP II; ADD];
@@ -184,7 +184,7 @@ let suite = "suite" >::: [
         in
         assert_equal ~cmp:[%eq: Rule.t list]
           ~printer:[%show: Rule.t list]
-          [r] (generalize s t)
+          [r] (generate_rules s t)
       );
   ]
 
