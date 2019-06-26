@@ -62,7 +62,7 @@ let suite = "suite" >::: [
         assert_bool "" (not (equiv s t))
       );
 
-    (* drop prefix *)
+    (* strip_prefix *)
 
     "Remove superflous prefix" >::(fun _ ->
         let s = [POP; PUSH (Val "0"); ADD] in
@@ -70,7 +70,7 @@ let suite = "suite" >::: [
         in
         assert_equal ~cmp:[%eq: Program.t * Program.t]
           ~printer:[%show: Program.t * Program.t]
-          ([PUSH (Val "0"); ADD], []) (drop_prefix s t)
+          ([PUSH (Val "0"); ADD], []) (strip_prefix s t)
       );
 
     "Removing prefix is not correct" >::(fun _ ->
@@ -79,10 +79,10 @@ let suite = "suite" >::: [
         in
         assert_equal ~cmp:[%eq: Program.t * Program.t]
           ~printer:[%show: Program.t * Program.t]
-          (s, t) (drop_prefix s t)
+          (s, t) (strip_prefix s t)
       );
 
-    (* remove suffix *)
+    (* strip_suffix *)
 
     "Remove superflous suffix" >::(fun _ ->
         let s = [PUSH (Val "0"); ADD; POP] in
@@ -90,7 +90,7 @@ let suite = "suite" >::: [
         in
         assert_equal ~cmp:[%eq: Program.t * Program.t]
           ~printer:[%show: Program.t * Program.t]
-          ([PUSH (Val "0"); ADD], []) (drop_suffix s t)
+          ([PUSH (Val "0"); ADD], []) (strip_suffix s t)
       );
 
     "Removing suffix is not correct" >::(fun _ ->
@@ -99,7 +99,7 @@ let suite = "suite" >::: [
         in
         assert_equal ~cmp:[%eq: Program.t * Program.t]
           ~printer:[%show: Program.t * Program.t]
-          (s, t) (drop_suffix s t)
+          (s, t) (strip_suffix s t)
       );
 
     (* abstract_push_args *)

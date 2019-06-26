@@ -10,18 +10,18 @@ let is_translation_valid s t =
 
 let equiv = is_translation_valid
 
-let rec drop_prefix s t = match s, t with
+let rec strip_prefix s t = match s, t with
   | _ :: s', _ :: t' ->
     if equiv s' t'
-    then drop_prefix s' t'
+    then strip_prefix s' t'
     else (s, t)
   | _ -> (s, t)
 
-let rec drop_suffix s t = match List.rev s, List.rev t with
+let rec strip_suffix s t = match List.rev s, List.rev t with
   | _ :: rs', _ :: rt' ->
     let s' = List.rev rs' and t' = List.rev rt' in
     if equiv s' t'
-    then drop_suffix s' t'
+    then strip_suffix s' t'
     else (s, t)
   | _ -> (s, t)
 
