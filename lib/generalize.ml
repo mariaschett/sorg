@@ -25,11 +25,7 @@ let mk_enc_var x s =
 
 let mk_enc_vars s = List.map (dom s) ~f:(fun x -> mk_enc_var x s)
 
-let proxy_name x y =
-  let stackarg_print = function
-    | Val n -> n | Const y -> y | Tmpl -> failwith "No Template variables allowed"
-  in
-  "b_" ^ x ^ "_" ^ (stackarg_print y)
+let proxy_name x y =  "b_" ^ x ^ "_" ^ [%show: vval] y
 
 (* bxx'-> (x, Var 0) ...*)
 let enc_literals_map evs =
