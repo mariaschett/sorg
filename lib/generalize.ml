@@ -36,13 +36,14 @@ let proxy_assigns evs =
   in
   List.fold evs ~init:String.Map.empty ~f:assign_proxy
 
-let enc_literals_atleastone evs =
-  let enc_literal_atleastone ev =
-    [ boolconst @@ proxy_name ev.x ev.v
-    ; boolconst @@ proxy_name ev.x ev.forall
-    ] @ List.map ev.eqv ~f:(fun y -> boolconst @@ proxy_name ev.x y)
-  in
-  conj @@ List.map evs ~f:(fun ev -> disj @@ enc_literal_atleastone ev)
+let enc_at_least_one ev =
+  disj @@
+  [ boolconst @@ proxy_name ev.x ev.v
+  ; boolconst @@ proxy_name ev.x ev.forall
+  ] @ List.map ev.eqv ~f:(fun y -> boolconst @@ proxy_name ev.x y)
+
+let enc_at_least_one_per_proxy evs =
+  conj @@ List.map evs ~f:enc_at_least_one
 
 let z3_const = function
   | Val n -> senum_string n
@@ -73,7 +74,7 @@ let enc_rule_valid r =
 let enc_generalize r evs =
   foralls (List.map evs ~f:(fun ev -> z3_const ev.forall)) (
     existss (List.map evs ~f:(fun ev -> seconst @@ ev.x)) (
-      enc_literals_atleastone evs <&> enc_rule_valid r
+      enc_at_least_one_per_proxy evs <&> enc_rule_valid r
       <&> enc_literals_def evs
     )
   )

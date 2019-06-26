@@ -68,11 +68,11 @@ let suite = "suite" >::: [
         (String.Map.of_alist_exn m) (proxy_assigns (mk_enc_vars s))
       );
 
-    (* enc_literals_atleastone *)
+    (* enc_at_least_one_per_proxy *)
 
-    "Check model for enc_literals_atleastone" >:: (fun _ ->
+    "Check model for enc_at_least_one_per_proxy" >:: (fun _ ->
         let names = List.map ss ~f:(fun (x,v) -> (proxy_name x v)) in
-        let m = solve_model_exn [enc_literals_atleastone (mk_enc_vars s)] in
+        let m = solve_model_exn [enc_at_least_one_per_proxy (mk_enc_vars s)] in
         let trues =
           List.filter names
             ~f:(fun n -> Z3.Boolean.is_true @@ eval_const m (boolconst n))
