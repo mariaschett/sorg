@@ -124,22 +124,6 @@ let suite = "suite" >::: [
           r' (maximal_rule_schema r)
       );
 
-    "Show system in TPDB format produces expected string" >:: (fun _ ->
-        let rs =
-          [ {lhs = [PUSH (Val "0"); PUSH (Const "x"); ADD]; rhs = [PUSH (Const "x")]}
-          ; {lhs = [DUP I; SWAP I]; rhs = []}
-          ]
-        in
-        assert_equal
-          ~printer:Fn.id
-          "(VAR x)\n\
-           (RULES\n\
-           \ \ PUSH(0, PUSH(x, ADD(P))) -> PUSH(x, P)\n\
-           \ \ DUP1(SWAP1(P)) -> P\n\
-           )"
-          (Rule.show_tpdb_system rs)
-      );
-
     (* match_opt *)
 
     "Find substitituion between general program and instantiated program">::(fun _ ->
