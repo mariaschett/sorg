@@ -9,13 +9,13 @@ open Subst
 let proxy_name x y =  "p_" ^ x ^ "_" ^ [%show: vval] y
 let enc_proxy x v = boolconst @@ proxy_name x v
 
-let for_all_name x = x ^ "'"
-let for_all_vval x = Const (for_all_name x)
+let self_name x = x ^ "'"
+let self_vval x = Const (self_name x)
 
 let eqv x s =
   let v = maps_to_exn x s in
   List.filter_map (preimages_of_val v s)
-        ~f:(fun y -> if x < y then Some (for_all_vval y) else None)
+        ~f:(fun y -> if x < y then Some (self_vval y) else None)
 
 let proxy_assigns s =
   let add_assign x v m = Map.add_exn m ~key:(proxy_name x v) ~data:(x, v) in
@@ -23,14 +23,14 @@ let proxy_assigns s =
     let v = maps_to_exn x s in
     List.fold (eqv x s) ~init:m ~f:(fun m y -> add_assign x y m)
     |> add_assign x v
-    |> add_assign x (for_all_vval x)
+    |> add_assign x (self_vval x)
   in
   List.fold (dom s) ~init:String.Map.empty ~f:assign_proxy
 
 let enc_at_least_one s x =
   disj @@
   [ enc_proxy x (maps_to_exn x s)
-  ; enc_proxy x (for_all_vval x)
+  ; enc_proxy x (self_vval x)
   ] @ List.map (eqv x s) ~f:(enc_proxy x)
 
 let enc_at_least_one_per_proxy s =
@@ -63,7 +63,7 @@ let enc_rule_valid r =
    (enc_equivalence_at ea sts stt ks kt))
 
 let enc_generalize r s =
-  foralls (List.map (dom s) ~f:(fun x -> enc_vval (for_all_vval x))) (
+  foralls (List.map (dom s) ~f:(fun x -> enc_vval (self_vval x))) (
     existss (List.map (dom s) ~f:(fun x -> seconst @@ x)) (
       enc_at_least_one_per_proxy s <&> enc_rule_valid r
       <&> enc_proxy_assigns s
