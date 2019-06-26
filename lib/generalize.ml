@@ -45,7 +45,7 @@ let enc_at_least_one ev =
 let enc_at_least_one_per_proxy evs =
   conj @@ List.map evs ~f:enc_at_least_one
 
-let z3_const = function
+let enc_vval = function
   | Val n -> senum_string n
   | Const y -> seconst y
   | Tmpl -> failwith "No Template variables allowed"
@@ -53,7 +53,7 @@ let z3_const = function
 let enc_literals_def evs =
   let mk_def l x v =
     let open Z3Ops in
-    boolconst l ==> (seconst x == z3_const v)
+    boolconst l ==> (seconst x == enc_vval v)
   in
   Map.fold (proxy_assigns evs)
     ~init:top ~f:(fun ~key:l ~data:(x, v) c -> c <&> mk_def l x v)
@@ -72,7 +72,7 @@ let enc_rule_valid r =
    (enc_equivalence_at ea sts stt ks kt))
 
 let enc_generalize r evs =
-  foralls (List.map evs ~f:(fun ev -> z3_const ev.forall)) (
+  foralls (List.map evs ~f:(fun ev -> enc_vval ev.forall)) (
     existss (List.map evs ~f:(fun ev -> seconst @@ ev.x)) (
       enc_at_least_one_per_proxy evs <&> enc_rule_valid r
       <&> enc_literals_def evs
