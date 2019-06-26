@@ -102,16 +102,6 @@ let suite = "suite" >::: [
           (s, t) (strip_suffix s t)
       );
 
-    (* generalize *)
-
-    "No abstraction possible">::(fun _ ->
-        let s = [PUSH (Val "0"); ADD] and t = [] in
-        let r = {lhs = s; rhs = t}
-        in
-        assert_equal
-          ~cmp:[%eq: Rule.t list] ~printer:[%show: Rule.t list]
-          [r] (generalize r)
-      );
 
     (* generate_rules *)
 

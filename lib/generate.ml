@@ -25,6 +25,4 @@ let rec strip_suffix s t = match List.rev s, List.rev t with
     else (s, t)
   | _ -> (s, t)
 
-let generalize = Generalize.generalize
-
 let generate_rules _ _ = failwith "generate_rules not implemented"

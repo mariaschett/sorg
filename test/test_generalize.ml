@@ -88,6 +88,15 @@ let suite = "suite" >::: [
 
     (* generalize *)
 
+    "No generalization possible">::(fun _ ->
+        let s = [PUSH (Val "0"); ADD] and t = [] in
+        let r = {lhs = s; rhs = t}
+        in
+        assert_equal
+          ~cmp:[%eq: Rule.t list] ~printer:[%show: Rule.t list]
+          [r] (generalize r)
+      );
+
     "Find all generalizations" >:: (fun _ ->
         let r = {lhs = [PUSH (Val "0")]; rhs = [PUSH (Val "0")]} in
         let rs = generalize r in
