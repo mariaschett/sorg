@@ -7,14 +7,15 @@ open Rule
 open Subst
 
 let proxy_name x y =  "p_" ^ x ^ "_" ^ [%show: vval] y
+let enc_proxy x v = boolconst @@ proxy_name x v
 
 let for_all_name x = x ^ "'"
+let for_all_vval x = Const (for_all_name x)
 
 (* to construct the constraints for a variable *)
 type enc_var = {
   x : vvar;
   v : vval;
-  forall : vval;
   eqv : vval list; (* contains only smaller variables *)
 }
 
@@ -22,28 +23,25 @@ let mk_enc_var x s =
   let v = maps_to_exn x s in
   { x = x;
     v = v;
-    forall = Const (for_all_name x);
     eqv = List.filter_map (preimages_to_val v s)
         ~f:(fun y -> if x < y then Some (Const (y ^ "'")) else None);
   }
 
 let mk_enc_vars s = List.map (dom s) ~f:(fun x -> mk_enc_var x s)
 
-let enc_proxy x v = boolconst @@ proxy_name x v
-
 let proxy_assigns evs =
   let assign_proxy m ev =
     List.fold ev.eqv ~init:m
       ~f:(fun m y -> Map.add_exn m ~key:(proxy_name ev.x y) ~data:(ev.x, y))
     |> Map.add_exn ~key:(proxy_name ev.x ev.v) ~data:(ev.x, ev.v)
-    |> Map.add_exn ~key:(proxy_name ev.x ev.forall) ~data:(ev.x, ev.forall)
+    |> Map.add_exn ~key:(proxy_name ev.x (for_all_vval ev.x)) ~data:(ev.x, for_all_vval ev.x)
   in
   List.fold evs ~init:String.Map.empty ~f:assign_proxy
 
 let enc_at_least_one ev =
   disj @@
   [ enc_proxy ev.x ev.v
-  ; enc_proxy ev.x ev.forall
+  ; enc_proxy ev.x (for_all_vval ev.x)
   ] @ List.map ev.eqv ~f:(enc_proxy ev.x)
 
 let enc_at_least_one_per_proxy evs =
@@ -76,7 +74,7 @@ let enc_rule_valid r =
    (enc_equivalence_at ea sts stt ks kt))
 
 let enc_generalize r evs =
-  foralls (List.map evs ~f:(fun ev -> enc_vval ev.forall)) (
+  foralls (List.map evs ~f:(fun ev -> enc_vval (for_all_vval ev.x))) (
     existss (List.map evs ~f:(fun ev -> seconst @@ ev.x)) (
       enc_at_least_one_per_proxy evs <&> enc_rule_valid r
       <&> enc_proxy_assigns evs
