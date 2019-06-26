@@ -83,7 +83,7 @@ let dec_generalize m ls =
   Map.fold ls ~init:[] ~f:(fun ~key:l ~data:xv s ->
       if Z3.Boolean.is_true (eval_const m (boolconst l)) then xv :: s else s)
 
-let forbid_subst s =
+let enc_exclude_subst s =
   ~! (conj (List.map s ~f:(fun (x, v) -> boolconst @@ proxy_name x v)))
 
 let find_different_subst ls c =
@@ -91,7 +91,7 @@ let find_different_subst ls c =
   | None -> None
   | Some m ->
     let s = dec_generalize m ls in
-    Some (s, c <&> forbid_subst s)
+    Some (s, c <&> enc_exclude_subst s)
 
 let generalize r =
   let r_0 = maximal_rule_schema r in
