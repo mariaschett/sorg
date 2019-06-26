@@ -21,7 +21,7 @@ let suite = "suite" >::: [
         assert_bool "" (equiv s t)
       );
 
-    "Abstract PUSH argument" >::(fun _ ->
+    "Generalize PUSH argument" >::(fun _ ->
         let s = [PUSH (Val "2"); DUP II; SWAP I] and t = [DUP I; PUSH (Val "2")] in
         assert_bool "" (equiv s t)
       );
@@ -32,7 +32,7 @@ let suite = "suite" >::: [
         assert_bool "" (equiv s t)
       );
 
-    "Abstract PUSH args, two rules" >::(fun _ ->
+    "Generalize PUSH args, two rules" >::(fun _ ->
         let s = [PUSH (Val "0"); PUSH (Val "0"); ADD] in
         let t = [PUSH (Val "0")] in
         assert_bool "" (equiv s t)
@@ -50,13 +50,13 @@ let suite = "suite" >::: [
         assert_bool "" (equiv s t)
       );
 
-    "Abstract PUSH args with constants" >::(fun _ ->
+    "Generalize PUSH args with constants" >::(fun _ ->
         let s = [PUSH (Val "0"); PUSH (Const "w"); ADD] in
         let t = [PUSH (Const "w")] in
         assert_bool "" (equiv s t)
       );
 
-    "Abstract PUSH args with different constants" >::(fun _ ->
+    "Generalize PUSH args with different constants" >::(fun _ ->
         let s = [PUSH (Val "0"); PUSH (Const "w1"); ADD] in
         let t = [PUSH (Const "w2")] in
         assert_bool "" (not (equiv s t))
@@ -127,7 +127,7 @@ let suite = "suite" >::: [
           [r] (generate_rules s t)
       );
 
-    "Abstract PUSH argument" >::(fun _ ->
+    "Generalize PUSH argument" >::(fun _ ->
         todo "generate_rules not implemented";
         let s = [PUSH (Val "2"); DUP II; SWAP I] and t = [DUP I; PUSH (Val "2")] in
         let r = { lhs = [PUSH (Const "c"); DUP II; SWAP I];
@@ -151,7 +151,7 @@ let suite = "suite" >::: [
           [r] (generate_rules s t)
       );
 
-    "Abstract PUSH args, two rules" >::(fun _ ->
+    "Generalize PUSH args, two rules" >::(fun _ ->
         todo "generate_rules not implemented";
         let s = [PUSH (Val "0"); PUSH (Val "0"); ADD] in
         let t = [PUSH (Val "0")] in
