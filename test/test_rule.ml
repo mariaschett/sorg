@@ -51,7 +51,7 @@ let suite = "suite" >::: [
         in
         assert_equal
           ~printer:Fn.id
-          "DUP1 SWAP1 -> " ([%show: Rule.t] r)
+          "DUP1 SWAP1 => " ([%show: Rule.t] r)
       );
 
     (* instruction_schema *)
