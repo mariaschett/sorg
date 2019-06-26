@@ -251,6 +251,34 @@ let suite = "suite" >::: [
           ~printer:[%show: Program.t]
           [PUSH (Val "0"); PUSH (Val "0")] (apply p s)
       );
+
+    (* is_instance *)
+
+    "ADD is not an instance of PUSH x">::(fun _ ->
+        assert_equal false (is_instance [ADD] [PUSH (Const "x")])
+      );
+
+    "PUSH 0 is an instance of PUSH x">::(fun _ ->
+        assert_equal true (is_instance [PUSH (Val "0")] [PUSH (Const "x")])
+      );
+
+    "PUSH x is not an instance of PUSH 0">::(fun _ ->
+        assert_equal false (is_instance [PUSH (Const "x")] [PUSH (Val "0")])
+      );
+
+    "[PUSH 0; PUSH 0] is an instance of [PUSH x; PUSH y]">::(fun _ ->
+        assert_equal true (is_instance
+                             [PUSH (Val "0"); PUSH (Val "0")]
+                             [PUSH (Const "x"); PUSH (Const "y")]
+                          )
+      );
+
+    "[PUSH 1; PUSH 0] is an not instance of [PUSH x; PUSH x]">::(fun _ ->
+        assert_equal false (is_instance
+                             [PUSH (Val "1"); PUSH (Val "0")]
+                             [PUSH (Const "x"); PUSH (Const "x")]
+                          )
+      );
   ]
 
 let () =

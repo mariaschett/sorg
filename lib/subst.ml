@@ -49,3 +49,5 @@ let apply p s =
     | i -> i
   in
   List.map p ~f:(apply_instruction)
+
+let is_instance s t = Option.is_some (match_opt t s)
