@@ -1,23 +1,51 @@
 open Core
 open Ebso
 
+let header =
+  [ "source bytecode"
+  ; "target bytecode"
+  ; "target opcode"
+  ; "target instruction count"
+  ; "source gas"
+  ; "target gas"
+  ; "gas saved"
+  ; "known optimal"
+  ; "translation validation"
+  ]
+
+let row_to_rule r =
+  let open Rule in
+  let parse s = Parser.parse @@ Sedlexing.Latin1.from_string s in
+  let sbc = Csv.Row.find r "source bytecode"
+  and tbc = Csv.Row.find r "target bytecode"
+  and tv = Csv.Row.find r "translation validation"
+  and gs = Csv.Row.find r "gas saved" in
+  if String.equal gs "0" || String.equal tv "false" then None
+  else Some {lhs = parse sbc; rhs = parse tbc}
+
 let () =
   let open Command.Let_syntax in
   Command.basic ~summary:"sorg: A SuperOptimization based Rule Generator"
     [%map_open
-      let i_s = flag "s" (required string)
-          ~doc:"program to optimize"
-      and
-        i_t = flag "t" (required string)
-          ~doc:"optimized program"
-      and
-        _ = flag "out" (optional string)
+      let in_csv = flag "incsv" (optional string)
+          ~doc:"csv read optimizations from csv"
+      and  _ = flag "out" (optional string)
           ~doc:"filename write output to csv file"
+      and opt = anon (maybe (t2 ("LHS" %: string) ("RHS" %: string)))
       in
       fun () ->
-        let lex = Sedlexing.Latin1.from_string in
-        let (b_s, b_t) = (lex i_s, lex i_t) in
-        let (s, t) = (Parser.parse b_s, Parser.parse b_t) in
-         Out_channel.printf "%s" (([%show: Program.t] s) ^ "optimizes to \n" ^ ([%show: Program.t] t))
+        let rs =
+          match in_csv with
+          | Some file ->
+            let csv = Csv.Rows.load ~has_header:true ~header:header file in
+            List.filter_map csv ~f:row_to_rule
+          | None ->
+            match opt with
+            | Some (lhs, rhs) ->
+              let parse s = Parser.parse @@ Sedlexing.Latin1.from_string s in
+              [Rule.({lhs = parse lhs; rhs = parse rhs})]
+            | None -> []
+        in
+        Out_channel.printf "%s" (Rewrite_system.show rs)
     ]
   |> Command.run ~version:"1.0"
