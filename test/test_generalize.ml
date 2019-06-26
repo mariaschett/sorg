@@ -26,27 +26,27 @@ let sort_rules rs =
 
 let suite = "suite" >::: [
 
-    (* mk_enc_var *)
+    (* same_image_larger *)
 
-    "Make eqv for x" >::(fun _ ->
+    "Make same_image_larger for x" >::(fun _ ->
         assert_equal
           ~cmp:[%eq: vval list]
           ~printer:[%show: vval list]
-          [Const "y'"; Const "z'"] (eqv "x" s)
+          [Const "y'"; Const "z'"] (same_image_larger "x" s)
       );
 
-      "Make eqv for y" >::(fun _ ->
+      "Make same_image_larger for y" >::(fun _ ->
         assert_equal
           ~cmp:[%eq: vval list]
           ~printer:[%show: vval list]
-          [Const "z'"] (eqv "y" s)
+          [Const "z'"] (same_image_larger "y" s)
       );
 
-    "Make eqv for z" >::(fun _ ->
+    "Make same_image_larger for z" >::(fun _ ->
         assert_equal
           ~cmp:[%eq: vval list]
           ~printer:[%show: vval list]
-          [] (eqv "z" s)
+          [] (same_image_larger "z" s)
       );
 
     (* proxy_assigns *)
