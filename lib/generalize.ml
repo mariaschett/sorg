@@ -25,29 +25,27 @@ let mk_enc_var x s =
 
 let mk_enc_vars s = List.map (dom s) ~f:(fun x -> mk_enc_var x s)
 
-let literal_name x y =
+let proxy_name x y =
   let stackarg_print = function
-    | Val n -> n
-    | Const y -> y
-    | Tmpl -> failwith "No Template variables allowed"
+    | Val n -> n | Const y -> y | Tmpl -> failwith "No Template variables allowed"
   in
-  "l" ^ x ^ (stackarg_print y)
+  "b_" ^ x ^ "_" ^ (stackarg_print y)
 
 (* bxx'-> (x, Var 0) ...*)
 let enc_literals_map evs =
   let enc_literal_map m ev =
     List.fold ev.eqv ~init:m
-      ~f:(fun m y -> Map.add_exn m ~key:(literal_name ev.x y) ~data:(ev.x, y))
-    |> Map.add_exn ~key:(literal_name ev.x ev.v) ~data:(ev.x, ev.v)
-    |> Map.add_exn ~key:(literal_name ev.x ev.forall) ~data:(ev.x, ev.forall)
+      ~f:(fun m y -> Map.add_exn m ~key:(proxy_name ev.x y) ~data:(ev.x, y))
+    |> Map.add_exn ~key:(proxy_name ev.x ev.v) ~data:(ev.x, ev.v)
+    |> Map.add_exn ~key:(proxy_name ev.x ev.forall) ~data:(ev.x, ev.forall)
   in
   List.fold evs ~init:String.Map.empty ~f:enc_literal_map
 
 let enc_literals_atleastone evs =
   let enc_literal_atleastone ev =
-    [ boolconst @@ literal_name ev.x ev.v
-    ; boolconst @@ literal_name ev.x ev.forall
-    ] @ List.map ev.eqv ~f:(fun y -> boolconst @@ literal_name ev.x y)
+    [ boolconst @@ proxy_name ev.x ev.v
+    ; boolconst @@ proxy_name ev.x ev.forall
+    ] @ List.map ev.eqv ~f:(fun y -> boolconst @@ proxy_name ev.x y)
   in
   conj @@ List.map evs ~f:(fun ev -> disj @@ enc_literal_atleastone ev)
 
@@ -90,7 +88,7 @@ let dec_generalize m ls =
       if Z3.Boolean.is_true (eval_const m (boolconst l)) then xv :: s else s)
 
 let forbid_subst s =
-  ~! (conj (List.map s ~f:(fun (x, v) -> boolconst @@ literal_name x v)))
+  ~! (conj (List.map s ~f:(fun (x, v) -> boolconst @@ proxy_name x v)))
 
 let find_different_subst ls c =
   match solve_model [c] with

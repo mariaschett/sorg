@@ -61,7 +61,7 @@ let suite = "suite" >::: [
     (* enc_literal_map *)
 
     "Check map of encoding literals">::(fun _ ->
-        let m = List.map ss ~f:(fun (x,v) -> (literal_name x v, (x,v))) in
+        let m = List.map ss ~f:(fun (x,v) -> (proxy_name x v, (x,v))) in
         assert_equal
           ~cmp:(String.Map.equal [%eq: ventr])
           ~printer:(fun m -> String.Map.sexp_of_t sexp_of_ventr m |> Sexp.to_string)
@@ -71,7 +71,7 @@ let suite = "suite" >::: [
     (* enc_literals_atleastone *)
 
     "Check model for enc_literals_atleastone" >:: (fun _ ->
-        let names = List.map ss ~f:(fun (x,v) -> (literal_name x v)) in
+        let names = List.map ss ~f:(fun (x,v) -> (proxy_name x v)) in
         let m = solve_model_exn [enc_literals_atleastone (mk_enc_vars s)] in
         let trues =
           List.filter names
@@ -85,7 +85,7 @@ let suite = "suite" >::: [
 
     "Check model for defining literals" >:: (fun _ ->
         let c = enc_literals_def (mk_enc_vars s) in
-        let c = c <&> conj @@ List.map ss ~f:(fun (x, v) -> boolconst (literal_name x v)) in
+        let c = c <&> conj @@ List.map ss ~f:(fun (x, v) -> boolconst (proxy_name x v)) in
         let m = solve_model_exn [c] in
         let vals =
           List.map s ~f:(fun (x, _) ->
