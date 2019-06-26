@@ -135,8 +135,8 @@ let suite = "suite" >::: [
         let t = [PUSH (Val "0")] in
         let r1 = { lhs = [PUSH (Val "0"); PUSH (Const "c"); ADD];
                    rhs = [PUSH (Const "c")]} in
-        let r2 = { lhs = [PUSH (Const "c"); PUSH (Val "0"); ADD];
-                   rhs = [PUSH (Const "c")]}
+        let r2 = { lhs = [PUSH (Val "0"); ADD];
+                   rhs = []}
         in
         assert_equal ~cmp:[%eq: Rule.t list]
           ~printer:[%show: Rule.t list]
