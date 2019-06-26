@@ -12,6 +12,11 @@ let enc_proxy x v = boolconst @@ proxy_name x v
 let for_all_name x = x ^ "'"
 let for_all_vval x = Const (for_all_name x)
 
+let eqv x s =
+  let v = maps_to_exn x s in
+  List.filter_map (preimages_to_val v s)
+        ~f:(fun y -> if x < y then Some (for_all_vval y) else None)
+
 (* to construct the constraints for a variable *)
 type enc_var = {
   x : vvar;
@@ -23,8 +28,7 @@ let mk_enc_var x s =
   let v = maps_to_exn x s in
   { x = x;
     v = v;
-    eqv = List.filter_map (preimages_to_val v s)
-        ~f:(fun y -> if x < y then Some (Const (y ^ "'")) else None);
+    eqv = eqv x s;
   }
 
 let mk_enc_vars s = List.map (dom s) ~f:(fun x -> mk_enc_var x s)
