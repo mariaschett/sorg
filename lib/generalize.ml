@@ -25,7 +25,7 @@ let mk_enc_var x s =
 
 let mk_enc_vars s = List.map (dom s) ~f:(fun x -> mk_enc_var x s)
 
-let proxy_name x y =  "b_" ^ x ^ "_" ^ [%show: vval] y
+let proxy_name x y =  "p_" ^ x ^ "_" ^ [%show: vval] y
 
 let proxy_assigns evs =
   let assign_proxy m ev =
