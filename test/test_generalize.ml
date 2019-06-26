@@ -58,14 +58,14 @@ let suite = "suite" >::: [
             {x = "z"; v = Val "0"; forall = Const "z'"; eqv = []} (mk_enc_var "z" s)
       );
 
-    (* enc_literal_map *)
+    (* proxy_assigns *)
 
-    "Check map of encoding literals">::(fun _ ->
+    "Check assignments of proxyss">::(fun _ ->
         let m = List.map ss ~f:(fun (x,v) -> (proxy_name x v, (x,v))) in
         assert_equal
           ~cmp:(String.Map.equal [%eq: ventr])
           ~printer:(fun m -> String.Map.sexp_of_t sexp_of_ventr m |> Sexp.to_string)
-        (String.Map.of_alist_exn m) (literals_map (mk_enc_vars s))
+        (String.Map.of_alist_exn m) (proxy_assigns (mk_enc_vars s))
       );
 
     (* enc_literals_atleastone *)
