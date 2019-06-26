@@ -27,6 +27,8 @@ let mk_enc_vars s = List.map (dom s) ~f:(fun x -> mk_enc_var x s)
 
 let proxy_name x y =  "p_" ^ x ^ "_" ^ [%show: vval] y
 
+let enc_proxy x v = boolconst @@ proxy_name x v
+
 let proxy_assigns evs =
   let assign_proxy m ev =
     List.fold ev.eqv ~init:m
@@ -38,9 +40,9 @@ let proxy_assigns evs =
 
 let enc_at_least_one ev =
   disj @@
-  [ boolconst @@ proxy_name ev.x ev.v
-  ; boolconst @@ proxy_name ev.x ev.forall
-  ] @ List.map ev.eqv ~f:(fun y -> boolconst @@ proxy_name ev.x y)
+  [ enc_proxy ev.x ev.v
+  ; enc_proxy ev.x ev.forall
+  ] @ List.map ev.eqv ~f:(enc_proxy ev.x)
 
 let enc_at_least_one_per_proxy evs =
   conj @@ List.map evs ~f:enc_at_least_one
@@ -84,7 +86,7 @@ let dec_generalize m ls =
       if Z3.Boolean.is_true (eval_const m (boolconst l)) then xv :: s else s)
 
 let enc_exclude_subst s =
-  ~! (conj (List.map s ~f:(fun (x, v) -> boolconst @@ proxy_name x v)))
+  ~! (conj (List.map s ~f:(fun (x, v) -> enc_proxy x v)))
 
 let find_different_subst ls c =
   match solve_model [c] with
