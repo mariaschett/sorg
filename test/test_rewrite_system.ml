@@ -5,6 +5,34 @@ open Rewrite_system
 
 let suite = "suite" >::: [
 
+    "Check that order of rules does not matter for equality" >:: (fun _ ->
+        let r_1 = {lhs = [PUSH (Val "0"); PUSH (Const "x"); ADD]; rhs = [PUSH (Const "x")]}
+        and r_2 = {lhs = [PUSH (Const "x"); PUSH (Val "0"); ADD]; rhs = [PUSH (Const "x")]}
+        and r_0 = {lhs = [PUSH (Val "0"); PUSH (Val "0"); ADD]; rhs = [PUSH (Val "0")]}
+        in
+        assert_equal ~cmp:[%eq: Rewrite_system.t] ~printer:[%show: Rewrite_system.t]
+          [r_0; r_1; r_2] [r_1; r_2; r_0]
+      );
+
+    "Check that alpha equivalence does not matter for equality" >:: (fun _ ->
+        let r_2 = {lhs = [PUSH (Const "x"); PUSH (Val "0"); ADD]; rhs = [PUSH (Const "x")]}
+        and r_3 = {lhs = [PUSH (Const "y"); PUSH (Val "0"); ADD]; rhs = [PUSH (Const "y")]}
+        in
+        assert_equal ~cmp:[%eq: Rewrite_system.t] ~printer:[%show: Rewrite_system.t]
+          [r_2] [r_3]
+      );
+
+    "Check that order and alpha do not matter for equality" >:: (fun _ ->
+        let r_1 = {lhs = [PUSH (Val "0"); PUSH (Const "x"); ADD]; rhs = [PUSH (Const "x")]}
+        and r_2 = {lhs = [PUSH (Const "x"); PUSH (Val "0"); ADD]; rhs = [PUSH (Const "x")]}
+        and r_0 = {lhs = [PUSH (Val "0"); PUSH (Val "0"); ADD]; rhs = [PUSH (Val "0")]}
+        and r_3 = {lhs = [PUSH (Const "y"); PUSH (Val "0"); ADD]; rhs = [PUSH (Const "y")]}
+        in
+        assert_equal ~cmp:[%eq: Rewrite_system.t] ~printer:[%show: Rewrite_system.t]
+          [r_0; r_3; r_1] [r_1; r_0; r_2]
+      );
+
+
     "Show system in TPDB format produces expected string" >:: (fun _ ->
         let rs =
           [ {lhs = [PUSH (Val "0"); PUSH (Const "x"); ADD]; rhs = [PUSH (Const "x")]}
