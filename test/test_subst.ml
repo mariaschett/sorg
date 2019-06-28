@@ -306,7 +306,39 @@ let suite = "suite" >::: [
           [] (same_image_larger "z" s)
       );
 
+    (* binding_alts *)
 
+    "Binding alternatives for single binding">::(fun _ ->
+        let s = [("x", Val "0")] in
+        assert_equal
+          ~cmp:[%eq: Subst.t]
+          ~printer:[%show: Subst.t]
+          [("x", Val "0"); ("x", Const "x")] (binding_alts "x" s)
+      );
+
+    "Binding alternatives for two variables mapping to different">::(fun _ ->
+        let s = [("x", Val "0"); ("y", Val "1")] in
+        assert_equal
+          ~cmp:[%eq: Subst.t]
+          ~printer:[%show: Subst.t]
+          [("x", Val "0"); ("x", Const "x")] (binding_alts "x" s)
+      );
+
+    "Binding alternatives for two variables mapping to same for larger variable">::(fun _ ->
+        let s = [("x", Val "0"); ("y", Val "0")] in
+        assert_equal
+          ~cmp:[%eq: Subst.t]
+          ~printer:[%show: Subst.t]
+          [("x", Val "0"); ("x", Const "x"); ("x", Const "y")] (binding_alts "x" s)
+      );
+
+    "Binding alternatives for two variables mapping to same for smaller variable">::(fun _ ->
+        let s = [("x", Val "0"); ("y", Val "0")] in
+        assert_equal
+          ~cmp:[%eq: Subst.t]
+          ~printer:[%show: Subst.t]
+          [("y", Val "0"); ("y", Const "y")] (binding_alts "y" s)
+      );
   ]
 
 let () =
