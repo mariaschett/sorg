@@ -4,7 +4,6 @@ open Evmenc
 open Z3util
 open Instruction
 open Rule
-open Generalize
 open Subst
 
 let is_translation_valid s t =
@@ -33,6 +32,14 @@ let rec strip_suffix r = match List.rev (r.lhs), List.rev (r.rhs) with
     then strip_suffix {lhs = s'; rhs = t'}
     else r
   | _ -> r
+
+let generalize_all r =
+  let r_0 = maximal_rule_schema r in
+  let s_0 = Option.value_exn (Subst.match_opt (r_0.lhs @ r_0.rhs) (r.lhs @ r.rhs)) in
+  let ss = Subst.all_subst_alts s_0 in
+  List.fold ss ~init:[] ~f:(fun rs s ->
+    let l' = apply r_0.lhs s and r' = apply r_0.rhs s in
+    if equiv l' r' then Rewrite_system.insert_max_general {lhs = l'; rhs = r'} rs else rs)
 
 let generalize r =
   let gr = generalize_all r in
