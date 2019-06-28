@@ -2,6 +2,10 @@ open Core
 
 type t = Rule.t list
 
+let equal rs1 rs2 =
+  let module RS = Set.Make_plain(Rule) in
+  Set.equal (RS.of_list rs1) (RS.of_list rs2)
+
 let pp fmt rs =
   Format.fprintf fmt "@[<v>";
   List.iter rs ~f:(Format.fprintf fmt "%a@," Rule.pp);

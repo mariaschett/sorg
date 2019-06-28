@@ -7,6 +7,7 @@ type t =
   { lhs : Program.t;
     rhs : Program.t;
   }
+[@@deriving sexp]
 
 let alpha_equal p1 p2 = match (match_opt p1 p2, match_opt p2 p1) with
   | (Some _, Some _) -> true
@@ -14,6 +15,15 @@ let alpha_equal p1 p2 = match (match_opt p1 p2, match_opt p2 p1) with
 
 let equal r1 r2 =
   alpha_equal (r1.lhs @ r1.rhs) (r2.lhs @ r2.rhs)
+
+let compare r1 r2 =
+  let compare_instr i1 i2 = match (i1, i2) with
+    | PUSH x, PUSH y -> Stackarg.compare x y
+    | _, _ -> Instruction.compare i1 i2
+  in
+  if equal r1 r2 then 0 else
+    List.compare compare_instr (r1.lhs @ r1.rhs) (r2.lhs @ r2.rhs)
+
 
 let pp fmt r =
   Format.fprintf fmt "@[%a => %a@]" Program.pp_h r.lhs Program.pp_h r.rhs
