@@ -275,9 +275,9 @@ let suite = "suite" >::: [
 
     "[PUSH 1; PUSH 0] is an not instance of [PUSH x; PUSH x]">::(fun _ ->
         assert_equal false (is_instance
-                             [PUSH (Val "1"); PUSH (Val "0")]
-                             [PUSH (Const "x"); PUSH (Const "x")]
-                          )
+                              [PUSH (Val "1"); PUSH (Val "0")]
+                              [PUSH (Const "x"); PUSH (Const "x")]
+                           )
       );
 
     (* same_image_larger *)
@@ -338,6 +338,32 @@ let suite = "suite" >::: [
           ~cmp:[%eq: Subst.t]
           ~printer:[%show: Subst.t]
           [("y", Val "0"); ("y", Const "y")] (binding_alts "y" s)
+      );
+
+    (* all_binding_alts *)
+
+    "All binding alternatives contain subst for largest x">::(fun _ ->
+        let s = [("x", Val "0"); ("y", Val "0"); ("z", Val "1");] in
+        let x_alt = [("x", Val "0"); ("x", Const "x"); ("x", Const "y")] in
+        assert_equal
+          true
+          (List.mem (all_binding_alts s) x_alt ~equal:[%eq: Subst.t])
+      );
+
+    "All binding alternatives contain subst for smaller y">::(fun _ ->
+        let s = [("x", Val "0"); ("y", Val "0"); ("z", Val "1");] in
+        let y_alt = [("y", Val "0"); ("y", Const "y")] in
+        assert_equal
+          true
+          (List.mem (all_binding_alts s) y_alt ~equal:[%eq: Subst.t])
+      );
+
+    "All binding alternatives contain subst for different z">::(fun _ ->
+        let s = [("x", Val "0"); ("y", Val "0"); ("z", Val "1");] in
+        let z_alt = [("z", Val "1"); ("z", Const "z")] in
+        assert_equal
+          true
+          (List.mem (all_binding_alts s) z_alt ~equal:[%eq: Subst.t])
       );
   ]
 

@@ -59,3 +59,5 @@ let same_image_larger x s =
 let binding_alts x s =
   [(x, Const x); (x, maps_to_exn x s)] @
   List.map (same_image_larger x s) ~f:(fun y -> (x, Const y))
+
+let all_binding_alts s = List.map (dom s) ~f:(fun x -> binding_alts x s)
