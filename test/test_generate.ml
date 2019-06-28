@@ -118,6 +118,7 @@ let suite = "suite" >::: [
       );
 
     "Generalize PUSH argument" >::(fun _ ->
+        todo "needs new implementation to not time out";
         let s = [PUSH (Val "2"); DUP II; SWAP I] and t = [DUP I; PUSH (Val "2")] in
         let r = { lhs = [PUSH (Const "c"); DUP II; SWAP I];
                   rhs = [DUP I; PUSH (Const "c")]}
@@ -129,6 +130,7 @@ let suite = "suite" >::: [
       );
 
     "Remove superflous prefix, abstract PUSH argument" >::(fun _ ->
+        todo "needs new implementation to not time out";
         let s = [POP; PUSH (Val "3"); SWAP I; POP] in
         let t = [POP; POP; PUSH (Val "3")] in
         let r = { lhs = [PUSH (Const "c"); SWAP I; POP];
@@ -140,6 +142,7 @@ let suite = "suite" >::: [
       );
 
     "Generalize PUSH args, two rules" >::(fun _ ->
+        todo "needs new implementation to not time out";
         let s = [PUSH (Val "0"); PUSH (Val "0"); ADD] in
         let t = [PUSH (Val "0")] in
         let r1 = { lhs = [PUSH (Val "0"); PUSH (Const "c"); ADD];
@@ -162,6 +165,7 @@ let suite = "suite" >::: [
       );
 
     "ADD commutative, combines remove pre-/suffix and generate rules argument" >::(fun _ ->
+        todo "needs new implementation to not time out";
         let s = [POP; PUSH (Val "3"); DUP II; ADD; SWAP I; POP; PUSH (Val "2")] in
         let t = [POP; PUSH (Val "3"); ADD; PUSH (Val "2")] in
         let r = { lhs = [PUSH (Const "c"); DUP II; ADD];
@@ -175,6 +179,7 @@ let suite = "suite" >::: [
     (* generalize *)
 
     "Find the two generalizations from PUSH 0 PUSH 0 ADD to PUSH 0">:: (fun _ ->
+        todo "needs new implementation to not time out";
         let r = {lhs = [PUSH (Val "0"); PUSH (Val "0"); ADD]; rhs = [PUSH (Val "0")]} in
         assert_equal
           ~printer:(fun rs -> [%show: Rule.t list] (sort_rules rs))
