@@ -12,12 +12,13 @@ let enc_rule_valid r =
   let sts = mk_state ea "_lhs" in
   let stt = mk_state ea "_rhs" in
   let kt = num (List.length r.rhs) and ks = num (List.length ea.p) in
-  ((List.foldi r.rhs ~init:(enc_program ea sts)
-      ~f:(fun j enc oc -> enc <&> enc_instruction ea stt (num j) oc)) &&
-   (enc_equivalence_at ea sts stt (num 0) (num 0)) &&
-   sts.used_gas @@ (forall_vars ea @ [num 0]) ==
-                   stt.used_gas @@ (forall_vars ea @ [num 0]) &&
-   (enc_equivalence_at ea sts stt ks kt))
+  foralls (ea.xs @ ea.ss @ List.concat (Map.data ea.uis))
+    ((List.foldi r.rhs ~init:(enc_program ea sts)
+        ~f:(fun j enc oc -> enc <&> enc_instruction ea stt (num j) oc)) &&
+     (enc_equivalence_at ea sts stt (num 0) (num 0)) &&
+     sts.used_gas @@ (forall_vars ea @ [num 0]) ==
+                     stt.used_gas @@ (forall_vars ea @ [num 0]) &&
+     (enc_equivalence_at ea sts stt ks kt))
 
 let proxy_name x y =  "p_" ^ x ^ "_" ^ [%show: vval] y
 let enc_proxy x v = boolconst @@ proxy_name x v
