@@ -3,6 +3,10 @@ open OUnit2
 open Rule
 open Rewrite_system
 
+let r_0 = {lhs = [PUSH (Val "0"); PUSH (Val "0"); ADD]; rhs = [PUSH (Val "0")]}
+let r_1 = {lhs = [PUSH (Val "0"); PUSH (Const "x"); ADD]; rhs = [PUSH (Const "x")]}
+let r_2 = {lhs = [PUSH (Const "x"); PUSH (Val "0"); ADD]; rhs = [PUSH (Const "x")]}
+
 let suite = "suite" >::: [
 
     "Check that order of rules does not matter for equality" >:: (fun _ ->
@@ -47,6 +51,34 @@ let suite = "suite" >::: [
            \ \ DUP1(SWAP1(P)) -> P\n\
            )"
           (show_tpdb rs)
+      );
+
+    (* insert_max_general *)
+
+    "Insert rule in empty">:: (fun _ ->
+        assert_equal ~cmp:[%eq: Rewrite_system.t] ~printer:[%show: Rewrite_system.t]
+        [r_1] (insert_max_general r_1 [])
+      );
+
+    "Insert more general rule">:: (fun _ ->
+        assert_equal ~cmp:[%eq: Rewrite_system.t] ~printer:[%show: Rewrite_system.t]
+        [r_1] (insert_max_general r_1 [r_0])
+      );
+
+    "Insert less general rule">:: (fun _ ->
+        assert_equal ~cmp:[%eq: Rewrite_system.t] ~printer:[%show: Rewrite_system.t]
+        [r_1] (insert_max_general r_0 [r_1])
+      );
+
+    "Insert incompatible rule">:: (fun _ ->
+        assert_equal ~cmp:[%eq: Rewrite_system.t] ~printer:[%show: Rewrite_system.t]
+        [r_1; r_2] (insert_max_general r_2 [r_1])
+      );
+
+    "Insert rule more general than both">:: (fun _ ->
+        let r_g = {lhs = [PUSH (Const "x"); PUSH (Const "y"); ADD]; rhs = [PUSH (Const "z")]} in
+        assert_equal ~cmp:[%eq: Rewrite_system.t] ~printer:[%show: Rewrite_system.t]
+        [r_g] (insert_max_general r_g [r_1; r_2])
       );
   ]
 

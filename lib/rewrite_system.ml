@@ -1,10 +1,20 @@
 open Core
+open Rule
 
 type t = Rule.t list
 
 let equal rs1 rs2 =
   let module RS = Set.Make_plain(Rule) in
   Set.equal (RS.of_list rs1) (RS.of_list rs2)
+
+let rec insert_max_general r rs =
+  let is_instance_rule r r' = Subst.is_instance (r.lhs @ r.rhs) (r'.lhs @ r'.rhs) in
+  match rs with
+  | [] -> [r]
+  | r' :: rs' ->
+    if is_instance_rule r' r then insert_max_general r rs'
+    else if is_instance_rule r r' then rs
+    else r' :: insert_max_general r rs'
 
 let pp fmt rs =
   Format.fprintf fmt "@[<v>";
