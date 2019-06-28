@@ -120,6 +120,27 @@ let suite = "suite" >::: [
           rs
       );
 
+    "Generalize program with stack-depth > 0" >:: (fun _ ->
+        let r = {lhs = [POP; PUSH (Val "3"); PUSH (Val "0"); ADD];
+                 rhs = [POP; PUSH (Val "3")]} in
+        assert_equal
+          ~printer:(fun rs -> [%show: Rule.t list] (sort_rules rs))
+          ~cmp:(fun rs rs' -> [%eq: Rule.t list] (sort_rules rs) (sort_rules rs'))
+          [ {lhs = [POP; PUSH (Const "x"); PUSH (Val "0"); ADD] ;
+             rhs = [POP; PUSH (Const "x")]}; r]
+          (generalize_all r)
+      );
+
+    "Generalize incorrect optimization" >:: (fun _ ->
+        let r = {lhs = [DUP I; PUSH (Val "3"); EQ];
+                 rhs = [PUSH (Val "1")]} in
+        assert_equal
+          ~printer:(fun rs -> [%show: Rule.t list] (sort_rules rs))
+          ~cmp:(fun rs rs' -> [%eq: Rule.t list] (sort_rules rs) (sort_rules rs'))
+          []
+          (generalize_all r)
+      );
+
     (* generalize *)
 
     "Find the two generalizations from PUSH 0 PUSH 0 ADD to PUSH 0">:: (fun _ ->
