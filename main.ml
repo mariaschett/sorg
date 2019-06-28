@@ -46,6 +46,7 @@ let () =
               [Rule.({lhs = parse lhs; rhs = parse rhs})]
             | None -> []
         in
-        Out_channel.printf "%s" (Rewrite_system.show rs)
+        let grs = List.concat_map rs ~f:Generate.generalize in
+        Out_channel.printf "%s" (Rewrite_system.show grs)
     ]
   |> Command.run ~version:"1.0"
