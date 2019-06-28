@@ -26,16 +26,15 @@ let enc_proxy x v = boolconst @@ proxy_name x v
 let self_name x = x ^ "'"
 let self_vval x = Const (self_name x)
 
-let same_image_larger x s =
-  let v = maps_to_exn x s in
-  List.filter_map (preimages_of_val v s)
-        ~f:(fun y -> if x < y then Some (self_vval y) else None)
+(* use convention to map to "forall version" of variable  *)
+let enc_same_image_larger x s =
+  List.map (same_image_larger x s) ~f:(self_vval)
 
 let proxy_assigns s =
   let add_assign x v m = Map.add_exn m ~key:(proxy_name x v) ~data:(x, v) in
   let assign_proxy m x =
     let v = maps_to_exn x s in
-    List.fold (same_image_larger x s) ~init:m ~f:(fun m y -> add_assign x y m)
+    List.fold (enc_same_image_larger x s) ~init:m ~f:(fun m y -> add_assign x y m)
     |> add_assign x v
     |> add_assign x (self_vval x)
   in
@@ -45,7 +44,7 @@ let enc_at_least_one s x =
   disj @@
   [ enc_proxy x (maps_to_exn x s)
   ; enc_proxy x (self_vval x)
-  ] @ List.map (same_image_larger x s) ~f:(enc_proxy x)
+  ] @ List.map (enc_same_image_larger x s) ~f:(enc_proxy x)
 
 let enc_at_least_one_per_proxy s =
   conj @@ List.map (dom s) ~f:(enc_at_least_one s)

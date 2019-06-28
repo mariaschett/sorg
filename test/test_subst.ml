@@ -279,6 +279,34 @@ let suite = "suite" >::: [
                              [PUSH (Const "x"); PUSH (Const "x")]
                           )
       );
+
+    (* same_image_larger *)
+
+    "Make same_image_larger for x" >::(fun _ ->
+        let s = [("x",Val "0"); ("y",Val "0"); ("z",Val "0")] in
+        assert_equal
+          ~cmp:[%eq: vvar list]
+          ~printer:[%show: vvar list]
+          ["y"; "z"] (same_image_larger "x" s)
+      );
+
+    "Make same_image_larger for y" >::(fun _ ->
+        let s = [("x",Val "0"); ("y",Val "0"); ("z",Val "0")] in
+        assert_equal
+          ~cmp:[%eq: vvar list]
+          ~printer:[%show: vvar list]
+          ["z"] (same_image_larger "y" s)
+      );
+
+    "Make same_image_larger for z" >::(fun _ ->
+        let s = [("x",Val "0"); ("y",Val "0"); ("z",Val "0")] in
+        assert_equal
+          ~cmp:[%eq: vvar list]
+          ~printer:[%show: vvar list]
+          [] (same_image_larger "z" s)
+      );
+
+
   ]
 
 let () =

@@ -51,3 +51,7 @@ let apply p s =
   List.map p ~f:(apply_instruction)
 
 let is_instance s t = Option.is_some (match_opt t s)
+
+let same_image_larger x s =
+  let v = maps_to_exn x s in
+  List.filter (preimages_of_val v s) ~f:(fun y -> x < y)

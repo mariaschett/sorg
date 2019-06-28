@@ -26,29 +26,6 @@ let sort_rules rs =
 
 let suite = "suite" >::: [
 
-    (* same_image_larger *)
-
-    "Make same_image_larger for x" >::(fun _ ->
-        assert_equal
-          ~cmp:[%eq: vval list]
-          ~printer:[%show: vval list]
-          [Const "y'"; Const "z'"] (same_image_larger "x" s)
-      );
-
-      "Make same_image_larger for y" >::(fun _ ->
-        assert_equal
-          ~cmp:[%eq: vval list]
-          ~printer:[%show: vval list]
-          [Const "z'"] (same_image_larger "y" s)
-      );
-
-    "Make same_image_larger for z" >::(fun _ ->
-        assert_equal
-          ~cmp:[%eq: vval list]
-          ~printer:[%show: vval list]
-          [] (same_image_larger "z" s)
-      );
-
     (* proxy_assigns *)
 
     "Check assignments of proxyss">::(fun _ ->
