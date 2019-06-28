@@ -94,10 +94,3 @@ let generalize_all r =
     | Some (s, c) -> substs (s :: ss) c
   in
   List.map (substs [] c) ~f:(Rule.apply r_0)
-
-let generalize r =
-  let gr = generalize_all r in
-  let most_general r = not (List.exists gr ~f:(fun r' ->
-      not ([%eq: Rule.t] r r') &&
-      is_instance (r.lhs @ r.rhs) (r'.lhs @ r'.rhs))) in
-  List.filter gr ~f:most_general

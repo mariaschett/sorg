@@ -3,6 +3,15 @@ open Generate
 open Ebso
 open Instruction
 open OUnit2
+open Core
+
+let sort_rules rs =
+  let compare_instr i1 i2 = match (i1, i2) with
+    | PUSH x, PUSH y -> Stackarg.compare x y
+    | _, _ -> Instruction.compare i1 i2
+  in
+  let compare_rule r1 r2 = List.compare compare_instr (r1.lhs @ r1.rhs) (r2.lhs @ r2.rhs) in
+  List.sort ~compare:compare_rule rs
 
 let suite = "suite" >::: [
 
@@ -161,6 +170,19 @@ let suite = "suite" >::: [
         assert_equal ~cmp:[%eq: Rule.t list]
           ~printer:[%show: Rule.t list]
           [r] (generate_rules s t)
+      );
+
+    (* generalize *)
+
+    "Find the two generalizations from PUSH 0 PUSH 0 ADD to PUSH 0">:: (fun _ ->
+        let r = {lhs = [PUSH (Val "0"); PUSH (Val "0"); ADD]; rhs = [PUSH (Val "0")]} in
+        assert_equal
+          ~printer:(fun rs -> [%show: Rule.t list] (sort_rules rs))
+          ~cmp:(fun rs rs' -> [%eq: Rule.t list] (sort_rules rs) (sort_rules rs'))
+          [ {lhs = [PUSH (Val "0"); PUSH (Const "x"); ADD]; rhs = [PUSH (Const "x")]}
+          ; {lhs = [PUSH (Const "x"); PUSH (Val "0"); ADD]; rhs = [PUSH (Const "x")]}
+          ]
+          (generalize r)
       );
   ]
 

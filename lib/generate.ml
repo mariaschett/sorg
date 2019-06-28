@@ -5,6 +5,7 @@ open Z3util
 open Instruction
 open Rule
 open Generalize
+open Subst
 
 let is_translation_valid s t =
   let c = enc_trans_val (mk_enc_consts s (`User [])) t in
@@ -32,6 +33,13 @@ let rec strip_suffix r = match List.rev (r.lhs), List.rev (r.rhs) with
     then strip_suffix {lhs = s'; rhs = t'}
     else r
   | _ -> r
+
+let generalize r =
+  let gr = generalize_all r in
+  let most_general r = not (List.exists gr ~f:(fun r' ->
+      not ([%eq: Rule.t] r r') &&
+      is_instance (r.lhs @ r.rhs) (r'.lhs @ r'.rhs))) in
+  List.filter gr ~f:most_general
 
 let generate_rules s t =
   let gr = generalize {lhs = s; rhs = t} in

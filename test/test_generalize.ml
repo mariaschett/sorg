@@ -118,19 +118,6 @@ let suite = "suite" >::: [
           (generalize_all r)
       );
 
-    (* generalize *)
-
-    "Find the two generalizations from PUSH 0 PUSH 0 ADD to PUSH 0">:: (fun _ ->
-        let r = {lhs = [PUSH (Val "0"); PUSH (Val "0"); ADD]; rhs = [PUSH (Val "0")]} in
-        assert_equal
-          ~printer:(fun rs -> [%show: Rule.t list] (sort_rules rs))
-          ~cmp:(fun rs rs' -> [%eq: Rule.t list] (sort_rules rs) (sort_rules rs'))
-          [ {lhs = [PUSH (Val "0"); PUSH (Const "x"); ADD]; rhs = [PUSH (Const "x")]}
-          ; {lhs = [PUSH (Const "x"); PUSH (Val "0"); ADD]; rhs = [PUSH (Const "x")]}
-          ]
-          (generalize r)
-      );
-
   ]
 
 let () =
