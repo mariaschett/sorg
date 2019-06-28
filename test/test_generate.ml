@@ -162,10 +162,20 @@ let suite = "suite" >::: [
       );
 
     "ADD commutative, combines remove pre-/suffix and generate rules argument" >::(fun _ ->
+        let s = [POP; PUSH (Val "3"); SWAP I; ADD; PUSH (Val "2")] in
+        let t = [POP; PUSH (Val "3"); ADD; PUSH (Val "2")] in
+        let r = { lhs = [SWAP I; ADD];
+                  rhs = [ADD] }
+        in
+        assert_equal ~cmp:[%eq: Rewrite_system.t] ~printer:[%show: Rewrite_system.t]
+          [r] (generate_rules s t)
+      );
+
+    "Mix ADD, DUP, and SWAP" >::(fun _ ->
         let s = [POP; PUSH (Val "3"); DUP II; ADD; SWAP I; POP; PUSH (Val "2")] in
         let t = [POP; PUSH (Val "3"); ADD; PUSH (Val "2")] in
-        let r = { lhs = [PUSH (Const "c"); DUP II; ADD];
-                  rhs = [PUSH (Const "c")] }
+        let r = { lhs = [DUP II; ADD; SWAP I; POP];
+                  rhs = [ADD] }
         in
         assert_equal ~cmp:[%eq: Rewrite_system.t] ~printer:[%show: Rewrite_system.t]
           [r] (generate_rules s t)
