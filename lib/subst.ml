@@ -61,3 +61,9 @@ let binding_alts x s =
   List.map (same_image_larger x s) ~f:(fun y -> (x, Const y))
 
 let all_binding_alts s = List.map (dom s) ~f:(fun x -> binding_alts x s)
+
+let rec n_cartesian_product = function
+| [] -> [[]]
+| xs :: yys ->
+    List.concat
+      (List.map xs ~f:(fun x -> List.map (n_cartesian_product yys) ~f:(fun ys -> x :: ys)))
