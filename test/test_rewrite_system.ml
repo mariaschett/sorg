@@ -53,6 +53,30 @@ let suite = "suite" >::: [
           (show_tpdb rs)
       );
 
+    (* contains_rule *)
+
+    "Rule is in the rewrite system">:: (fun _ ->
+        let r = {lhs = [PUSH (Const "x"); POP]; rhs = []} in
+        assert_equal true (contains_rule [r] r)
+      );
+
+    "Instance is in the rewrite system">:: (fun _ ->
+        let r   = {lhs = [PUSH (Const "x"); POP]; rhs = []} in
+        let r_i = {lhs = [PUSH (Const "y"); POP]; rhs = []} in
+        assert_equal true (contains_rule [r_i] r)
+      );
+
+    "Rule is not in the rewrite system">:: (fun _ ->
+        let r = {lhs = [PUSH (Const "x"); POP]; rhs = []} in
+        let rs = [{lhs = [PUSH (Val "0"); PUSH (Const "x"); ADD]; rhs = [PUSH (Const "x")]}] in
+        assert_equal false (contains_rule rs r)
+      );
+
+    "No rule is in the empty rewrite system">:: (fun _ ->
+        let r = {lhs = [PUSH (Const "x"); POP]; rhs = []} in
+        assert_equal false (contains_rule [] r)
+      );
+
     (* insert_max_general *)
 
     "Insert rule in empty">:: (fun _ ->

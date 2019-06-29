@@ -7,6 +7,8 @@ let equal rs1 rs2 =
   let module RS = Set.Make_plain(Rule) in
   Set.equal (RS.of_list rs1) (RS.of_list rs2)
 
+let contains_rule rs r = List.mem rs r ~equal:[%eq: Rule.t] (* identifies alpha equvivalent rules *)
+
 let rec insert_max_general r rs =
   let is_instance_rule r r' = Subst.is_instance (r.lhs @ r.rhs) (r'.lhs @ r'.rhs) in
   match rs with
