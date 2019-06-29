@@ -56,7 +56,8 @@ let () =
         Evmenc.set_wsz 256;
         List.fold rs ~init:([], [], []) ~f:(fun rs (s,t) ->
             Out_channel.printf "%s"
-              ("Generating rules for " ^ Program.show_h s ^ " >= " ^ Program.show_h t ^ "\n");
+              ("[" ^ [%show: Time.t] (Time.now ()) ^ "]" ^
+               " Generating rules for " ^ Program.show_h s ^ " >= " ^ Program.show_h t ^ "\n");
             Out_channel.flush stdout;
             process_optimization rs (s,t)) |> ignore
     ]
