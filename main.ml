@@ -22,6 +22,11 @@ let row_to_optimization r =
   if String.equal gs "0" || String.equal tv "false" then None
   else Some (parse sbc, parse tbc)
 
+let process_optimization (s, t) =
+  Out_channel.printf "%s"
+    (Rewrite_system.show (Generate.generate_rules s t));
+  Out_channel.flush stdout
+
 let () =
   let open Command.Let_syntax in
   Command.basic ~summary:"sorg: A SuperOptimization based Rule Generator"
@@ -46,9 +51,6 @@ let () =
             | None -> []
         in
         Evmenc.set_wsz 256;
-        List.iter rs ~f:(fun (s, t) ->
-            Out_channel.printf "%s"
-              (Rewrite_system.show (Generate.generate_rules s t));
-            Out_channel.flush stdout)
+        List.iter rs ~f:process_optimization
     ]
   |> Command.run ~version:"1.0"
