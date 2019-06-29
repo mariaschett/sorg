@@ -20,6 +20,12 @@ let rec insert_max_general r rs =
     else if is_instance_rule r r' then rs
     else r' :: insert_max_general r rs'
 
+let insert_non_dup_rules rs' rs =
+  let insert (rs, dups) r =
+    if contains_rule rs r then (rs, r :: dups) else (r :: rs, dups)
+  in
+  List.fold rs' ~init:(rs, []) ~f:insert
+
 let pp fmt rs =
   Format.fprintf fmt "@[<v>";
   List.iter rs ~f:(Format.fprintf fmt "%a@," Rule.pp);

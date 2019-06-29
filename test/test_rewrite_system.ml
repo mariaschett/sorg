@@ -114,6 +114,33 @@ let suite = "suite" >::: [
         assert_equal ~cmp:[%eq: Rewrite_system.t] ~printer:[%show: Rewrite_system.t]
         [r_g] (insert_max_general r_g [r_1; r_2])
       );
+
+    (* insert_non_dup_rules *)
+
+    "Check that a fresh rule is inserted" >:: (fun _ ->
+        assert_equal ~cmp:[%eq: Rewrite_system.t * Rewrite_system.t]
+          ~printer:[%show: Rewrite_system.t * Rewrite_system.t]
+          ([r_0; r_1], []) (insert_non_dup_rules [r_0] [r_1])
+      );
+
+    "Check that a duplicate rule is not inserted" >:: (fun _ ->
+        assert_equal ~cmp:[%eq: Rewrite_system.t * Rewrite_system.t]
+          ~printer:[%show: Rewrite_system.t * Rewrite_system.t]
+          ([r_1], [r_1]) (insert_non_dup_rules [r_1] [r_1])
+      );
+
+    "Check that multiple rules are inserted correctly" >:: (fun _ ->
+        assert_equal ~cmp:[%eq: Rewrite_system.t * Rewrite_system.t]
+          ~printer:[%show: Rewrite_system.t * Rewrite_system.t]
+          ([r_0; r_1; r_2], [r_1]) (insert_non_dup_rules [r_1; r_0; r_2] [r_1])
+      );
+
+    "Check that multiple duplicates are kept correctly" >:: (fun _ ->
+        assert_equal ~cmp:[%eq: Rewrite_system.t * Rewrite_system.t]
+          ~printer:[%show: Rewrite_system.t * Rewrite_system.t]
+          ([r_0; r_1], [r_1; r_1; r_0]) (insert_non_dup_rules [r_1; r_0; r_1; r_0] [r_1])
+      );
+
   ]
 
 let () =
