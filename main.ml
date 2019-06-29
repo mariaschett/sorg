@@ -13,15 +13,14 @@ let header =
   ; "translation validation"
   ]
 
-let row_to_rule r =
-  let open Rule in
+let row_to_optimization r =
   let parse s = Parser.parse @@ Sedlexing.Latin1.from_string s in
   let sbc = Csv.Row.find r "source bytecode"
   and tbc = Csv.Row.find r "target bytecode"
   and tv = Csv.Row.find r "translation validation"
   and gs = Csv.Row.find r "gas saved" in
   if String.equal gs "0" || String.equal tv "false" then None
-  else Some {lhs = parse sbc; rhs = parse tbc}
+  else Some (parse sbc, parse tbc)
 
 let () =
   let open Command.Let_syntax in
@@ -38,15 +37,17 @@ let () =
           match in_csv with
           | Some file ->
             let csv = Csv.Rows.load ~has_header:true ~header:header file in
-            List.filter_map csv ~f:row_to_rule
+            List.filter_map csv ~f:row_to_optimization
           | None ->
             match opt with
             | Some (lhs, rhs) ->
               let parse s = Parser.parse @@ Sedlexing.Latin1.from_string s in
-              [Rule.({lhs = parse lhs; rhs = parse rhs})]
+              [(parse lhs, parse rhs)]
             | None -> []
         in
-        let grs = List.concat_map rs ~f:Generate.generalize in
-        Out_channel.printf "%s" (Rewrite_system.show grs)
+        List.iter rs ~f:(fun (s, t) ->
+            Out_channel.printf "%s"
+              (Rewrite_system.show (Generate.generate_rules s t));
+            Out_channel.flush stdout)
     ]
   |> Command.run ~version:"1.0"
