@@ -22,13 +22,13 @@ let row_to_optimization r =
   if String.equal gs "0" || String.equal tv "false" then None
   else Some (parse sbc, parse tbc)
 
-let process_optimization (rs, muls) (s, t) =
+let process_optimization (rs, dups, muls) (s, t) =
   let rs' = Generate.generate_rules s t in
-  let muls' = if Rewrite_system.size rs' > 1 then ((s, t), rs') :: muls else muls in
-  Out_channel.printf "%s"
-     (Rewrite_system.show rs');
-  Out_channel.flush stdout;
-  (rs' @ rs, muls')
+  let muls' =
+    if Rewrite_system.size rs' > 1 then ((s, t), rs') :: muls else muls
+  in
+  let (rs'', dups') = Rewrite_system.insert_non_dup_rules rs' rs in
+  (rs'', dups' @ dups, muls')
 
 let () =
   let open Command.Let_syntax in
@@ -54,6 +54,10 @@ let () =
             | None -> []
         in
         Evmenc.set_wsz 256;
-        List.fold rs ~init:([], []) ~f:(process_optimization) |> ignore
+        List.fold rs ~init:([], [], []) ~f:(fun rs (s,t) ->
+            Out_channel.printf "%s"
+              ("Generating rules for " ^ Program.show_h s ^ " >= " ^ Program.show_h t ^ "\n");
+            Out_channel.flush stdout;
+            process_optimization rs (s,t)) |> ignore
     ]
   |> Command.run ~version:"1.0"
