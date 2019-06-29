@@ -45,6 +45,7 @@ let () =
               [(parse lhs, parse rhs)]
             | None -> []
         in
+        Evmenc.set_wsz 256;
         List.iter rs ~f:(fun (s, t) ->
             Out_channel.printf "%s"
               (Rewrite_system.show (Generate.generate_rules s t));
