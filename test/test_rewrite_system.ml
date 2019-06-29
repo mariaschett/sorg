@@ -77,6 +77,16 @@ let suite = "suite" >::: [
         assert_equal false (contains_rule [] r)
       );
 
+    (* size *)
+
+    "Empty rewrite system has size 0">:: (fun _ ->
+        assert_equal 0 (size [])
+      );
+
+    "Rewrite system of size 3">:: (fun _ ->
+        assert_equal 3 (size [r_1; r_2; r_0])
+      );
+
     (* insert_max_general *)
 
     "Insert rule in empty">:: (fun _ ->

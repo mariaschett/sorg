@@ -9,6 +9,8 @@ let equal rs1 rs2 =
 
 let contains_rule rs r = List.mem rs r ~equal:[%eq: Rule.t] (* identifies alpha equvivalent rules *)
 
+let size = List.length
+
 let rec insert_max_general r rs =
   let is_instance_rule r r' = Subst.is_instance (r.lhs @ r.rhs) (r'.lhs @ r'.rhs) in
   match rs with
