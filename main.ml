@@ -54,11 +54,16 @@ let () =
             | None -> []
         in
         Evmenc.set_wsz 256;
-        List.fold rs ~init:([], [], []) ~f:(fun rs (s,t) ->
-            Out_channel.printf "%s"
-              ("[" ^ [%show: Time.t] (Time.now ()) ^ "]" ^
-               " Generating rules for " ^ Program.show_h s ^ " >= " ^ Program.show_h t ^ "\n");
-            Out_channel.flush stdout;
-            process_optimization rs (s,t)) |> ignore
+        let (rs, dups, muls) =
+          List.fold rs ~init:([], [], []) ~f:(fun rs (s,t) ->
+              Out_channel.fprintf stderr "%s"
+                ("[" ^ [%show: Time.t] (Time.now ()) ^ "]" ^
+                 " Generating rules for " ^ Program.show_h s ^ " >= " ^ Program.show_h t ^ "\n");
+              Out_channel.flush stderr;
+              process_optimization rs (s,t))
+        in
+        Out_channel.printf "%s" (Rewrite_system.show rs);
+        Out_channel.printf "\nDups\n%s" (Rewrite_system.show (List.sort ~compare:Rule.compare dups));
+        Out_channel.printf "\nMuls\n%s\n" ([%show: ((Program.t * Program.t) * Rule.t list) list] muls)
     ]
   |> Command.run ~version:"1.0"
