@@ -54,7 +54,9 @@ let match_opt gr sr =
 
 let apply r s = {lhs = apply r.lhs s; rhs = apply r.rhs s;}
 
-let is_subrule _ _ = failwith "is_subrule not implemented"
+let is_subrule r r' =
+  let ctxts = Ctxt.all_ctxts r.lhs r'.lhs in
+  List.exists ctxts ~f:(fun c -> Program.equal (Ctxt.apply c r.rhs) r'.rhs)
 
 let pp_tpdb_program fmt ?(var="P") p =
   let len = List.length p in
