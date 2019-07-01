@@ -28,16 +28,12 @@ let rec postfix s t = match (s, t) with
   | i1 :: s', i2:: t' when i1 = i2 -> postfix s' t'
   | _, _ -> None
 
-let add_postfix cs t = List.map cs ~f:(fun (pre, post) -> (pre, post @ t))
-
 let rec all_ctxts s t = match (s, t) with
-  | i1 :: _, i2 :: t' ->
+  | _ :: _, i2 :: t' ->
     let cs = ext_prefix (all_ctxts s t') i2 in
-    if i1 = i2 then (match postfix s t with
-        | Some post -> add_postfix cs post
-        | None -> cs
-      )
-      else cs
+    (match postfix s t with
+     | Some post -> ([], post) :: cs
+     | None -> cs)
   | [], [] -> [([], [])]
   | [], _  -> [([], t); (t, [])]
   | _, []  -> []
