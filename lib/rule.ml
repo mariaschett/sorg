@@ -54,6 +54,8 @@ let match_opt gr sr =
 
 let apply r s = {lhs = apply r.lhs s; rhs = apply r.rhs s;}
 
+let is_subrule _ _ = failwith "is_subrule not implemented"
+
 let pp_tpdb_program fmt ?(var="P") p =
   let len = List.length p in
   let rec pp fmt = function

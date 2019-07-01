@@ -136,6 +136,47 @@ let suite = "suite" >::: [
         (Some [("x", Val "0"); ("y", Val "0"); ("z", Val "0")]) (match_opt gr sr)
       );
 
+    (* is_subrule *)
+
+    "A rule is a subrule of itself" >:: (fun _ ->
+        let r = {lhs = [PUSH (Val "0"); ADD]; rhs = []} in
+        assert_bool "should be a subrule" (is_subrule r r )
+      );
+
+    "Adding a prefix results in a subrule" >:: (fun _ ->
+        let r = {lhs = [PUSH (Val "0"); ADD]; rhs = []} in
+        let c = ([POP], []) in
+        let r' = {lhs = Ctxt.apply c r.lhs; rhs = Ctxt.apply c r.rhs} in
+        assert_bool "should be a subrule" (is_subrule r r')
+      );
+
+    "Adding a postfix results in a subrule" >:: (fun _ ->
+        let r = {lhs = [PUSH (Val "0"); ADD]; rhs = []} in
+        let c = ([], [SUB]) in
+        let r' = {lhs = Ctxt.apply c r.lhs; rhs = Ctxt.apply c r.rhs} in
+        assert_bool "should be a subrule" (is_subrule r r')
+      );
+
+    "Adding a context results in a subrule" >:: (fun _ ->
+        let r = {lhs = [PUSH (Val "0"); ADD]; rhs = []} in
+        let c = ([POP], [SUB]) in
+        let r' = {lhs = Ctxt.apply c r.lhs; rhs = Ctxt.apply c r.rhs} in
+        assert_bool "should be a subrule" (is_subrule r r')
+      );
+
+    "Different ways of being a subrule" >:: (fun _ ->
+        let r = {lhs = [PUSH (Val "0"); ADD]; rhs = []} in
+        let r' = {lhs = [PUSH (Val "0"); ADD; PUSH (Val "0"); ADD];
+                  rhs = [PUSH (Val "0"); ADD]} in
+        assert_bool "should be a subrule" (is_subrule r r')
+      );
+
+    "Having different contexts on lhs and rhs is not a subrule" >:: (fun _ ->
+        let r = {lhs = [PUSH (Val "0"); ADD]; rhs = []} in
+        let r' = {lhs = [PUSH (Val "0"); ADD; PUSH (Val "0"); ADD]; rhs = []} in
+        assert_bool "should not be a subrule" (not @@ is_subrule r r')
+      );
+
   ]
 
 let () =
