@@ -18,20 +18,35 @@ let eq_mod_push_arg i i' = match i, i' with
   | PUSH _, PUSH _ -> true
   | _ -> [%eq: Instruction.t] i i'
 
-let rec strip_prefix r = match r.lhs, r.rhs with
-  | i :: s', i' :: t' when eq_mod_push_arg i i' ->
-    if equiv s' t'
-    then strip_prefix {lhs = s'; rhs = t'}
-    else r
-  | _ -> r
+let rec strip_all r = List.dedup_and_sort ~compare:Rule.compare ([r] @ strip_fst r @ strip_last r @ strip_both r)
+and
+  strip_fst r = match r.lhs, r.rhs with
+  | i1 :: l', i2 :: r' when eq_mod_push_arg i1 i2 ->
+    if equiv l' r' then strip_all {lhs = l'; rhs = r'} else []
+  | _, _ -> []
+and
+  strip_last r = match List.rev r.lhs, List.rev r.rhs with
+  | j1 :: rl', j2 :: rr' when eq_mod_push_arg j1 j2 ->
+    let l' = List.rev rl' and r' = List.rev rr' in
+    if equiv l' r' then strip_all {lhs = l'; rhs = r'} else []
+  | _, _ -> []
+and
+  strip_both r = match r.lhs, r.rhs with
+  | i1 :: l', i2 :: r' when eq_mod_push_arg i1 i2 ->
+    (match List.rev l', List.rev r' with
+     | j1 :: rl'', j2 :: rr'' when eq_mod_push_arg j1 j2 ->
+       let l'' = List.rev rl'' and r'' = List.rev rr'' in
+       if equiv l'' r'' then strip_all {lhs = l''; rhs = r''} else []
+     | _, _ -> [])
+  | _, _ -> []
 
-let rec strip_suffix r = match List.rev (r.lhs), List.rev (r.rhs) with
-  | i :: rs', i' :: rt' when eq_mod_push_arg i i' ->
-    let s' = List.rev rs' and t' = List.rev rt' in
-    if equiv s' t'
-    then strip_suffix {lhs = s'; rhs = t'}
-    else r
-  | _ -> r
+let strip r =
+  let sr = strip_all r in
+  let most_context r = not (List.exists sr ~f:(fun r' ->
+      not ([%eq: Rule.t] r r') &&
+      is_subrule r' r))
+  in
+  List.filter sr ~f:most_context
 
 let generalize_all r =
   let r_0 = maximal_rule_schema r in
@@ -50,6 +65,4 @@ let generalize r =
 
 let generate_rules s t =
   let gr = generalize {lhs = s; rhs = t} in
-  let pre_suf r = strip_suffix (strip_prefix r) in
-  let suf_pre r = strip_prefix (strip_suffix r) in
-  List.fold (List.map gr ~f:suf_pre) ~init:(List.map gr ~f:pre_suf) ~f:(fun rs r -> if (List.mem rs r ~equal:[%eq: Rule.t]) then rs else r :: rs)
+  List.fold (List.concat_map gr ~f:strip) ~init:[] ~f:(fun rs r -> if (List.mem rs r ~equal:[%eq: Rule.t]) then rs else r :: rs)
