@@ -4,12 +4,15 @@ open Instruction
 
 type t = Program.t * Program.t [@@deriving show { with_path = false }, sexp, equal]
 
-let compare (pre1, post1) (pre2, post2) =
+let compare c1 c2 =
   let compare_instr i1 i2 = match (i1, i2) with
     | PUSH x, PUSH y -> Stackarg.compare x y
     | _, _ -> Instruction.compare i1 i2
   in
-  List.compare compare_instr (pre1 @ post1) (pre2 @ post2)
+  Tuple.T2.compare
+    ~cmp1:(List.compare compare_instr)
+    ~cmp2:(List.compare compare_instr)
+    c1 c2
 
 let apply (pre, post) s = pre @ s @ post
 
