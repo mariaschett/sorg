@@ -2,7 +2,12 @@ open Core
 open Ebso
 open Instruction
 
-type t = Program.t * Program.t [@@deriving show { with_path = false }, sexp, equal]
+type t = Program.t * Program.t [@@deriving sexp, equal]
+
+let pp fmt (pre, post) =
+  Format.fprintf fmt "@[(%a, %a)@]" Program.pp_h pre Program.pp_h post
+
+let show p = pp Format.str_formatter p |> Format.flush_str_formatter
 
 let compare c1 c2 =
   let compare_instr i1 i2 = match (i1, i2) with
