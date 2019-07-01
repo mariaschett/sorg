@@ -5,14 +5,6 @@ open Instruction
 open OUnit2
 open Core
 
-let sort_rules rs =
-  let compare_instr i1 i2 = match (i1, i2) with
-    | PUSH x, PUSH y -> Stackarg.compare x y
-    | _, _ -> Instruction.compare i1 i2
-  in
-  let compare_rule r1 r2 = List.compare compare_instr (r1.lhs @ r1.rhs) (r2.lhs @ r2.rhs) in
-  List.sort ~compare:compare_rule rs
-
 let suite = "suite" >::: [
 
     (* equiv *)
