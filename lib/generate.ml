@@ -65,4 +65,5 @@ let generalize r =
 
 let generate_rules s t =
   let gr = generalize {lhs = s; rhs = t} in
-  List.fold (List.concat_map gr ~f:strip) ~init:[] ~f:(fun rs r -> if (List.mem rs r ~equal:[%eq: Rule.t]) then rs else r :: rs)
+  List.fold (List.concat_map gr ~f:strip) ~init:[]
+    ~f:(fun rs r -> if (List.mem rs r ~equal:[%eq: Rule.t]) then rs else r :: rs)
