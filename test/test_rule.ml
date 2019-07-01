@@ -177,6 +177,14 @@ let suite = "suite" >::: [
         assert_bool "should not be a subrule" (not @@ is_subrule r r')
       );
 
+    "Subrule with PUSH" >:: (fun _ ->
+        let r = {lhs = [PUSH (Const "w_1"); SWAP I; POP];
+                 rhs = [POP; PUSH (Const "w_1")]} in
+        let r' = {lhs = [POP; PUSH (Const "w_1"); SWAP I; POP];
+                  rhs = [POP; POP; PUSH (Const "w_1")]} in
+        assert_bool "should be a subrule" (is_subrule r r')
+      );
+
   ]
 
 let () =
