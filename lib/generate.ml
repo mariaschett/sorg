@@ -6,9 +6,11 @@ open Instruction
 open Rule
 open Subst
 
+let timeout = ref 0
+
 let is_translation_valid s t =
   let c = enc_trans_val (mk_enc_consts s (`User [])) t in
-  match solve_model [c] with
+  match solve_model_timeout [c] !timeout with
     | None -> true
     | Some _ -> false
 
