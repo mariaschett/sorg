@@ -182,6 +182,15 @@ let suite = "suite" >::: [
           [r] (generate_rules s t)
       );
 
+    "Mix ADDRESS, DUP and POP" >:: (fun _ ->
+        let s = [ADDRESS; DUP I; POP] in
+        let t = [ADDRESS; ADDRESS; POP] in
+        assert_equal ~cmp:[%eq: Rewrite_system.t] ~printer:[%show: Rewrite_system.t]
+          [{lhs = [ADDRESS; DUP I]; rhs = [ADDRESS; ADDRESS]};
+           {lhs = [DUP I; POP]; rhs = [ADDRESS; POP]}]
+          (generate_rules s t)
+      );
+
     (* generalize *)
 
     "Find the two generalizations from PUSH 0 PUSH 0 ADD to PUSH 0">:: (fun _ ->
