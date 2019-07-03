@@ -33,7 +33,7 @@ let extend_maps_to x v s = List.Assoc.add s x v ~equal:[%eq: vvar]
 
 let match_instruction s p1 p2 = match s, p1, p2 with
   | Some s', PUSH (Const x), PUSH w when not (in_dom x s') -> Some (extend_maps_to x w s')
-  | Some s', PUSH (Const x), PUSH w when (maps_to_exn x s') = w -> s
+  | Some s', PUSH (Const x), PUSH w -> if (maps_to_exn x s') = w then s else None
   | Some _, i1, i2 when i1 = i2 -> s
   | _ -> None
 
