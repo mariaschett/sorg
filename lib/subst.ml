@@ -69,3 +69,7 @@ let rec n_cartesian_product = function
       (List.map xs ~f:(fun x -> List.map (n_cartesian_product yys) ~f:(fun ys -> x :: ys)))
 
 let all_subst_alts s = n_cartesian_product (all_binding_alts s)
+
+(* providing program t which contains dom (s1 \cup dom s2) is
+   simplification to use existing functionality *)
+let more_general_subst t s1 s2 = is_instance (apply t s2) (apply t s1)
