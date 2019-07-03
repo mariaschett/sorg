@@ -202,6 +202,44 @@ let suite = "suite" >::: [
           ]
           (generalize r)
       );
+
+    "No generalization possible">::(fun _ ->
+        let s = [PUSH (Val "0"); ADD] and t = [] in
+        let r = {lhs = s; rhs = t}
+        in
+        assert_equal
+           ~cmp:[%eq: Rewrite_system.t] ~printer:[%show: Rewrite_system.t]
+          [r] (generalize r)
+      );
+
+    "Find generalization for one variable" >:: (fun _ ->
+        let r = {lhs = [PUSH (Val "0")]; rhs = [PUSH (Val "0")]} in
+        let rs = generalize r in
+        assert_equal
+           ~cmp:[%eq: Rewrite_system.t] ~printer:[%show: Rewrite_system.t]
+          [{lhs = [PUSH (Const "x")]; rhs = [PUSH (Const "x")]}]
+          rs
+      );
+
+    "Generalize program with stack-depth > 0" >:: (fun _ ->
+        let r = {lhs = [POP; PUSH (Val "3"); PUSH (Val "0"); ADD];
+                 rhs = [POP; PUSH (Val "3")]} in
+        assert_equal
+          ~cmp:[%eq: Rewrite_system.t] ~printer:[%show: Rewrite_system.t]
+          [ {lhs = [POP; PUSH (Const "x"); PUSH (Val "0"); ADD] ;
+             rhs = [POP; PUSH (Const "x")]};]
+          (generalize r)
+      );
+
+    "Generalize incorrect optimization" >:: (fun _ ->
+        let r = {lhs = [DUP I; PUSH (Val "3"); EQ];
+                 rhs = [PUSH (Val "1")]} in
+        assert_equal
+          ~cmp:[%eq: Rewrite_system.t] ~printer:[%show: Rewrite_system.t]
+          []
+          (generalize r)
+      );
+
   ]
 
 let () =
