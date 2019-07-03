@@ -288,6 +288,20 @@ let suite = "suite" >::: [
                            )
       );
 
+    "[PUSH x; PUSH y] is an not instance of [PUSH x; PUSH x]">::(fun _ ->
+        assert_equal false (is_instance
+                              [PUSH (Const "x"); PUSH (Const "y")]
+                              [PUSH (Const "x"); PUSH (Const "x")]
+                           )
+      );
+
+    "[PUSH y; PUSH x] is an not instance of [PUSH x; PUSH x]">::(fun _ ->
+        assert_equal false (is_instance
+                              [PUSH (Const "y"); PUSH (Const "x")]
+                              [PUSH (Const "x"); PUSH (Const "x")]
+                           )
+      );
+
     (* same_image_larger *)
 
     "Make same_image_larger for x" >::(fun _ ->
