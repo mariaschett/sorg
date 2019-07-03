@@ -50,20 +50,13 @@ let strip r =
   in
   List.filter sr ~f:most_context
 
-let generalize_all r =
+let generalize r =
   let r_0 = maximal_rule_schema r in
   let s_0 = Option.value_exn (Subst.match_opt (r_0.lhs @ r_0.rhs) (r.lhs @ r.rhs)) in
   let ss = Subst.all_subst_alts s_0 in
   List.fold ss ~init:[] ~f:(fun rs s ->
     let l' = apply r_0.lhs s and r' = apply r_0.rhs s in
     if equiv l' r' then Rewrite_system.insert_max_general {lhs = l'; rhs = r'} rs else rs)
-
-let generalize r =
-  let gr = generalize_all r in
-  let most_general r = not (List.exists gr ~f:(fun r' ->
-      not ([%eq: Rule.t] r r') &&
-      is_instance (r.lhs @ r.rhs) (r'.lhs @ r'.rhs))) in
-  List.filter gr ~f:most_general
 
 let generate_rules s t =
   let gr = generalize {lhs = s; rhs = t} in
