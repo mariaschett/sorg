@@ -559,6 +559,16 @@ let suite = "suite" >::: [
           [] (rm_more_general t s2 [s1])
       );
 
+    "Do not remove less general substition s2 mapping to same variable">::(fun _ ->
+        let s1 = [("x", Const "x"); ("y", Const "y")] in
+        let s2 = [("x", Const "x"); ("y", Const "x")] in
+        let t = [PUSH (Const "y"); PUSH (Const "x")] in
+        assert_equal
+          ~cmp:[%eq: Subst.t list]
+          ~printer:[%show: Subst.t list]
+          [s2] (rm_more_general t s1 [s2])
+      );
+
     "Do not remove less general substition s2">::(fun _ ->
         let s1 = [("x", Val "0"); ("y", Const "y")] in
         let s2 = [("x", Const "x"); ("y", Const "x")] in
