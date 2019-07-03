@@ -73,3 +73,5 @@ let all_subst_alts s = n_cartesian_product (all_binding_alts s)
 (* providing program t which contains dom (s1 \cup dom s2) is
    simplification to use existing functionality *)
 let more_general_subst t s1 s2 = is_instance (apply t s2) (apply t s1)
+
+let less_general_subst t s1 s2 = [%eq: t] s1 s2 || more_general_subst t s2 s1

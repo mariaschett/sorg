@@ -433,6 +433,43 @@ let suite = "suite" >::: [
         let s2 = [("x", Const "x"); ("y", Const "y")] in
         assert_equal false (more_general_subst [PUSH (Const "x"); PUSH (Const "y")] s1 s2)
       );
+
+    (* less_general_subst *)
+
+    "A variable is mapped to a constant">::(fun _ ->
+        let s1 = [("x", Const "x")] in
+        let s2 = [("x", Val "0")] in
+        assert_equal false (less_general_subst [PUSH (Const "x")] s1 s2)
+      );
+
+    "A variable mapped to the same is mapped to different constants">::(fun _ ->
+        let s1 = [("x", Const "x"); ("y", Const "x")] in
+        let s2 = [("x", Val "0"); ("y", Val "1")] in
+        assert_equal false (less_general_subst [PUSH (Const "x"); PUSH (Const "y")] s1 s2)
+      );
+
+    "Two substitutions are incomparable">::(fun _ ->
+        let s1 = [("x", Const "x"); ("y", Val "0")] in
+        let s2 = [("x", Val "0"); ("y", Const "y")] in
+        assert_equal false (less_general_subst [PUSH (Const "x"); PUSH (Const "y")] s1 s2)
+      );
+
+    "More general is reflexive">::(fun _ ->
+        let s1 = [("x", Const "0")] in
+        assert_equal true (less_general_subst [PUSH (Const "x")] s1 s1)
+      );
+
+    "Different variables are mapped to the same">::(fun _ ->
+        let s1 = [("x", Const "x"); ("y", Const "y")] in
+        let s2 = [("x", Const "x"); ("y", Const "x")] in
+        assert_equal false (less_general_subst [PUSH (Const "x"); PUSH (Const "y")] s1 s2)
+      );
+
+    "Same variables are mapped to a different variable">::(fun _ ->
+        let s1 = [("x", Const "x"); ("y", Const "x")] in
+        let s2 = [("x", Const "x"); ("y", Const "y")] in
+        assert_equal true (less_general_subst [PUSH (Const "x"); PUSH (Const "y")] s1 s2)
+      );
   ]
 
 let () =
