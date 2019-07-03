@@ -75,3 +75,9 @@ let all_subst_alts s = n_cartesian_product (all_binding_alts s)
 let more_general_subst t s1 s2 = is_instance (apply t s2) (apply t s1)
 
 let less_general_subst t s1 s2 = [%eq: t] s1 s2 || more_general_subst t s2 s1
+
+let rm_less_general t s = List.fold ~init:[]
+    ~f:(fun ss s' -> if less_general_subst t s' s then ss else s' :: ss)
+
+let rm_more_general t s = List.fold ~init:[]
+    ~f:(fun ss s' -> if more_general_subst t s' s then ss else s' :: ss)

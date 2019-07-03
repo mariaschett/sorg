@@ -418,7 +418,7 @@ let suite = "suite" >::: [
       );
 
     "More general is reflexive">::(fun _ ->
-        let s1 = [("x", Const "0")] in
+        let s1 = [("x", Const "x")] in
         assert_equal true (more_general_subst [PUSH (Const "x")] s1 s1)
       );
 
@@ -455,7 +455,7 @@ let suite = "suite" >::: [
       );
 
     "More general is reflexive">::(fun _ ->
-        let s1 = [("x", Const "0")] in
+        let s1 = [("x", Const "x")] in
         assert_equal true (less_general_subst [PUSH (Const "x")] s1 s1)
       );
 
@@ -469,6 +469,90 @@ let suite = "suite" >::: [
         let s1 = [("x", Const "x"); ("y", Const "x")] in
         let s2 = [("x", Const "x"); ("y", Const "y")] in
         assert_equal true (less_general_subst [PUSH (Const "x"); PUSH (Const "y")] s1 s2)
+      );
+
+    (* rm_less_general *)
+
+    "Do not remove incompatible">::(fun _ ->
+        let s1 = [("x", Val "0"); ("y", Const "y")] in
+        let s2 = [("x", Const "x"); ("y", Val "0")] in
+        let t = [PUSH (Const "x"); PUSH (Const "y")] in
+        assert_equal
+          ~cmp:[%eq: Subst.t list]
+          ~printer:[%show: Subst.t list]
+          [s2] (rm_less_general t s1 [s2])
+      );
+
+    "Remove less general substition s2">::(fun _ ->
+        let s1 = [("x", Val "0"); ("y", Const "y")] in
+        let s2 = [("x", Val "0"); ("y", Val "0")] in
+        let t = [PUSH (Const "x"); PUSH (Const "y")] in
+        assert_equal
+          ~cmp:[%eq: Subst.t list]
+          ~printer:[%show: Subst.t list]
+          [] (rm_less_general t s1 [s2])
+      );
+
+    "Remove less general substition s2 mapping to same variable">::(fun _ ->
+        let s1 = [("x", Const "x"); ("y", Const "y")] in
+        let s2 = [("x", Const "x"); ("y", Const "x")] in
+        let t = [PUSH (Const "x"); PUSH (Const "y")] in
+        assert_equal
+          ~cmp:[%eq: Subst.t list]
+          ~printer:[%show: Subst.t list]
+          [] (rm_less_general t s1 [s2])
+      );
+
+    "Do not remove more general substition s2">::(fun _ ->
+        let s1 = [("x", Val "0"); ("y", Const "y")] in
+        let s2 = [("x", Const "x"); ("y", Const "x")] in
+        let t = [PUSH (Const "x"); PUSH (Const "y")] in
+        assert_equal
+          ~cmp:[%eq: Subst.t list]
+          ~printer:[%show: Subst.t list]
+          [s2] (rm_less_general t s1 [s2])
+      );
+
+    (* rm_more_general *)
+
+    "Do not remove incompatible">::(fun _ ->
+        let s1 = [("x", Val "0"); ("y", Const "y")] in
+        let s2 = [("x", Const "x"); ("y", Val "0")] in
+        let t = [PUSH (Const "x"); PUSH (Const "y")] in
+        assert_equal
+          ~cmp:[%eq: Subst.t list]
+          ~printer:[%show: Subst.t list]
+          [s2] (rm_more_general t s1 [s2])
+      );
+
+    "Remove more general substition s1">::(fun _ ->
+        let s1 = [("x", Val "0"); ("y", Const "y")] in
+        let s2 = [("x", Val "0"); ("y", Val "0")] in
+        let t = [PUSH (Const "x"); PUSH (Const "y")] in
+        assert_equal
+          ~cmp:[%eq: Subst.t list]
+          ~printer:[%show: Subst.t list]
+          [] (rm_more_general t s2 [s1])
+      );
+
+    "Remove more general substition s2 mapping to same variable">::(fun _ ->
+        let s1 = [("x", Const "x"); ("y", Const "y")] in
+        let s2 = [("x", Const "x"); ("y", Const "x")] in
+        let t = [PUSH (Const "x"); PUSH (Const "y")] in
+        assert_equal
+          ~cmp:[%eq: Subst.t list]
+          ~printer:[%show: Subst.t list]
+          [] (rm_more_general t s2 [s1])
+      );
+
+    "Do not remove less general substition s2">::(fun _ ->
+        let s1 = [("x", Val "0"); ("y", Const "y")] in
+        let s2 = [("x", Const "x"); ("y", Const "x")] in
+        let t = [PUSH (Const "x"); PUSH (Const "y")] in
+        assert_equal
+          ~cmp:[%eq: Subst.t list]
+          ~printer:[%show: Subst.t list]
+          [s1] (rm_less_general t s2 [s1])
       );
   ]
 
