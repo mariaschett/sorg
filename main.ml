@@ -39,6 +39,7 @@ let () =
       and timeout = flag "timeout" (optional int)
           ~doc:"TO passes timeout TO in seconds to each call to Z3; if one call \
                 times out then sorg gives up for that optimization."
+      and tpdb = flag "tpdb" no_arg ~doc:"print output in tpdb format"
       and  _ = flag "out" (optional string)
           ~doc:"filename write output to csv file"
       and opt = anon (maybe (t2 ("LHS" %: string) ("RHS" %: string)))
@@ -72,7 +73,10 @@ let () =
                 Out_channel.flush stderr;
                 (rs, (s, t) :: tos))
         in
-        Out_channel.printf "%s" (Rewrite_system.show rs);
+        if tpdb then
+          Out_channel.printf "%s" (Rewrite_system.show_tpdb rs)
+        else
+          Out_channel.printf "%s" (Rewrite_system.show rs);
         Out_channel.printf "\nDups\n%s" (Rewrite_system.show (List.sort ~compare:Rule.compare dups));
         Out_channel.printf "\nMuls\n%s\n" ([%show: ((Program.t * Program.t) * Rule.t list) list] muls);
         Out_channel.printf "\nTimeouts\n%s\n" ([%show: (Program.t * Program.t) list] timeouts)
