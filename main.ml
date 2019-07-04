@@ -8,7 +8,7 @@ type result =
   ; origins : (Rule.t * (Program.t * Program.t)) list
   }
 
-let header =
+let incsv_header =
   [ "source bytecode"
   ; "target bytecode"
   ; "target opcode"
@@ -79,7 +79,7 @@ let print_timeouts timeouts =
 let get_opts in_csv opt =
   match in_csv with
   | Some file ->
-    let csv = Csv.Rows.load ~has_header:true ~header:header file in
+    let csv = Csv.Rows.load ~has_header:true ~header:incsv_header file in
     List.filter_map csv ~f:row_to_optimization
   | None ->
     match opt with
