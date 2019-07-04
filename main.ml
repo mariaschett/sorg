@@ -66,6 +66,18 @@ let print_timeouts timeouts =
   List.iter timeouts ~f:print_opt;
   Format.printf "@]"
 
+let get_opts in_csv opt =
+  match in_csv with
+  | Some file ->
+    let csv = Csv.Rows.load ~has_header:true ~header:header file in
+    List.filter_map csv ~f:row_to_optimization
+  | None ->
+    match opt with
+    | Some (lhs, rhs) ->
+      let parse s = Parser.parse @@ Sedlexing.Latin1.from_string s in
+      [(parse lhs, parse rhs)]
+    | None -> []
+
 let () =
   let open Command.Let_syntax in
   Command.basic ~summary:"sorg: A SuperOptimization based Rule Generator"
@@ -88,18 +100,7 @@ let () =
       in
       fun () ->
         Generate.timeout := (Option.value ~default:0 timeout) * 1000;
-        let opts =
-          match in_csv with
-          | Some file ->
-            let csv = Csv.Rows.load ~has_header:true ~header:header file in
-            List.filter_map csv ~f:row_to_optimization
-          | None ->
-            match opt with
-            | Some (lhs, rhs) ->
-              let parse s = Parser.parse @@ Sedlexing.Latin1.from_string s in
-              [(parse lhs, parse rhs)]
-            | None -> []
-        in
+        let opts = get_opts in_csv opt in
         Evmenc.set_wsz 256;
         let ((rs, dups, muls), timeouts) = process_optimizations opts in
         if tpdb then
