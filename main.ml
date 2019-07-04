@@ -30,6 +30,18 @@ let process_optimization (rs, dups, muls) (s, t) =
   let (rs'', dups') = Rewrite_system.insert_non_dup_rules rs' rs in
   (rs'', dups' @ dups, muls')
 
+let process_optimizations opts =
+  List.fold opts ~init:(([], [], []), []) ~f:(fun (rs, tos) (s,t) ->
+      try
+        Out_channel.fprintf stderr "[%s] Generating rules for %s >= %s\n"
+          ([%show: Time.t] (Time.now ())) (Program.show_h s) (Program.show_h t);
+        Out_channel.flush stderr;
+        (process_optimization rs (s,t), tos)
+      with Z3util.Z3_Timeout ->
+        Out_channel.fprintf stderr "[%s] timed out.\n" ([%show: Time.t] (Time.now ()));
+        Out_channel.flush stderr;
+        (rs, (s, t) :: tos))
+
 let print_dups dups =
   Format.printf "\nThe following rules were generated more than once:\n";
   Format.printf "%s" (Rewrite_system.show dups)
@@ -74,7 +86,7 @@ let () =
       in
       fun () ->
         Generate.timeout := (Option.value ~default:0 timeout) * 1000;
-        let rs =
+        let opts =
           match in_csv with
           | Some file ->
             let csv = Csv.Rows.load ~has_header:true ~header:header file in
@@ -87,18 +99,7 @@ let () =
             | None -> []
         in
         Evmenc.set_wsz 256;
-        let ((rs, dups, muls), timeouts) =
-          List.fold rs ~init:(([], [], []), []) ~f:(fun (rs, tos) (s,t) ->
-              try
-                Out_channel.fprintf stderr "[%s] Generating rules for %s >= %s\n"
-                  ([%show: Time.t] (Time.now ())) (Program.show_h s) (Program.show_h t);
-                Out_channel.flush stderr;
-                (process_optimization rs (s,t), tos)
-              with Z3util.Z3_Timeout ->
-                Out_channel.fprintf stderr "[%s] timed out.\n" ([%show: Time.t] (Time.now ()));
-                Out_channel.flush stderr;
-                (rs, (s, t) :: tos))
-        in
+        let ((rs, dups, muls), timeouts) = process_optimizations opts in
         if tpdb then
           Out_channel.printf "%s" (Rewrite_system.show_tpdb rs)
         else
