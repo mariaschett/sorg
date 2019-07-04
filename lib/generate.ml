@@ -66,7 +66,7 @@ let rec generalize' rs r_0 t = function
 let generalize r =
   let r_0 = maximal_rule_schema r in
   let s_0 = Option.value_exn (Subst.match_opt (r_0.lhs @ r_0.rhs) (r.lhs @ r.rhs)) in
-  let ss = Subst.all_subst_alts s_0 in
+  let ss = List.sort (Subst.all_subst_alts s_0) ~compare:(fun s s' -> Subst.compare s' s) in
   generalize' [] r_0 (r_0.lhs @ r_0.rhs) ss
 
 let generate_rules s t =
