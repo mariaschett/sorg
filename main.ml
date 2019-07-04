@@ -1,6 +1,12 @@
 open Core
 open Ebso
 
+type result =
+  { rules : Rule.t list
+  ; duplicates : Rule.t list
+  ; multiples : ((Program.t * Program.t) * Rule.t list) list
+  }
+
 let header =
   [ "source bytecode"
   ; "target bytecode"
@@ -22,27 +28,29 @@ let row_to_optimization r =
   if String.equal gs "0" || String.equal tv "false" then None
   else Some (parse sbc, parse tbc)
 
-let process_optimization (rs, dups, muls) (s, t) =
-  let rs' = Generate.generate_rules s t in
-  let muls' =
-    if Rewrite_system.size rs' > 1 then ((s, t), rs') :: muls else muls
-  in
-  let (rs'', dups') = Rewrite_system.insert_non_dup_rules rs' rs in
-  (rs'', dups' @ dups, muls')
+let process_optimization result (s, t) =
+  let rs = Generate.generate_rules s t in
+  let muls' = if Rewrite_system.size rs > 1 then [((s, t), rs)] else [] in
+  let (rs', dups') = Rewrite_system.insert_non_dup_rules rs result.rules in
+  { rules = rs'
+  ; duplicates = dups' @ result.duplicates
+  ; multiples = muls' @ result.multiples
+  }
 
 let process_optimizations opts =
-  let process_opt_with_timeout (rs, tos) (s,t) =
+  let process_opt_with_timeout (result, timeouts) (s, t) =
     try
       Out_channel.fprintf stderr "[%s] Generating rules for %s >= %s\n"
         ([%show: Time.t] (Time.now ())) (Program.show_h s) (Program.show_h t);
       Out_channel.flush stderr;
-      (process_optimization rs (s,t), tos)
+      (process_optimization result (s,t), timeouts)
     with Z3util.Z3_Timeout ->
       Out_channel.fprintf stderr "[%s] timed out.\n" ([%show: Time.t] (Time.now ()));
       Out_channel.flush stderr;
-      (rs, (s, t) :: tos)
+      (result, (s, t) :: timeouts)
   in
-  List.fold opts ~init:(([], [], []), []) ~f:process_opt_with_timeout
+  let result = {rules = []; duplicates = []; multiples = []} in
+  List.fold opts ~init:(result, []) ~f:process_opt_with_timeout
 
 let print_dups dups =
   Format.printf "\nThe following rules were generated more than once:\n";
@@ -102,13 +110,13 @@ let () =
         Generate.timeout := (Option.value ~default:0 timeout) * 1000;
         let opts = get_opts in_csv opt in
         Evmenc.set_wsz 256;
-        let ((rs, dups, muls), timeouts) = process_optimizations opts in
+        let (result, timeouts) = process_optimizations opts in
         if tpdb then
-          Out_channel.printf "%s" (Rewrite_system.show_tpdb rs)
+          Out_channel.printf "%s" (Rewrite_system.show_tpdb result.rules)
         else
-          Out_channel.printf "%s" (Rewrite_system.show rs);
-        if pdups then print_dups dups else ();
-        if pmuls then print_muls muls else ();
+          Out_channel.printf "%s" (Rewrite_system.show result.rules);
+        if pdups then print_dups result.duplicates else ();
+        if pmuls then print_muls result.multiples else ();
         if ptos then print_timeouts timeouts else ()
     ]
   |> Command.run ~version:"1.0"
