@@ -20,6 +20,9 @@ let incsv_header =
   ; "translation validation"
   ]
 
+let show_optimization (s, t) =
+  Printf.sprintf "%s >= %s" (Program.show_h s) (Program.show_h t)
+
 let row_to_optimization r =
   let parse s = Parser.parse @@ Sedlexing.Latin1.from_string s in
   let sbc = Csv.Row.find r "source bytecode"
@@ -40,16 +43,16 @@ let process_optimization result (s, t) =
   }
 
 let process_optimizations opts =
-  let process_opt_with_timeout (result, timeouts) (s, t) =
+  let process_opt_with_timeout (result, timeouts) opt =
     try
-      Out_channel.fprintf stderr "[%s] Generating rules for %s >= %s\n"
-        ([%show: Time.t] (Time.now ())) (Program.show_h s) (Program.show_h t);
+      Out_channel.fprintf stderr "[%s] Generating rules for %s\n"
+        ([%show: Time.t] (Time.now ())) (show_optimization opt);
       Out_channel.flush stderr;
-      (process_optimization result (s,t), timeouts)
+      (process_optimization result opt, timeouts)
     with Z3util.Z3_Timeout ->
       Out_channel.fprintf stderr "[%s] timed out.\n" ([%show: Time.t] (Time.now ()));
       Out_channel.flush stderr;
-      (result, (s, t) :: timeouts)
+      (result, opt :: timeouts)
   in
   let result = {rules = []; duplicates = []; multiples = []; origins = []} in
   List.fold opts ~init:(result, []) ~f:process_opt_with_timeout
@@ -59,8 +62,8 @@ let print_dups dups =
   Format.printf "%s" (Rewrite_system.show dups)
 
 let print_muls muls =
-  let print_mul ((s, t), rs) =
-    Format.printf "@[<v 2>%s >= %s@," (Program.show_h s) (Program.show_h t);
+  let print_mul (opt, rs) =
+    Format.printf "@[<v 2>%s@," (show_optimization opt);
     List.iter rs ~f:(fun r -> Format.printf "%s@," (Rule.show r));
     Format.printf "@]"
   in
@@ -68,8 +71,8 @@ let print_muls muls =
   List.iter muls ~f:print_mul
 
 let print_timeouts timeouts =
-  let print_opt (s, t) =
-    Format.printf "%s >= %s@," (Program.show_h s) (Program.show_h t)
+  let print_opt opt =
+    Format.printf "%s@," (show_optimization opt)
   in
   Format.printf "\nThe following optimizations timed out:";
   Format.printf "@[<v>";
