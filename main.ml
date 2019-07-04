@@ -20,6 +20,16 @@ let incsv_header =
   ; "translation validation"
   ]
 
+let outcsv_header =
+  [ "lhs"
+  ; "rhs"
+  ; "vars"
+  ; "gas saved"
+  ; "opt source"
+  ; "opt target"
+  ; "tpdb"
+  ]
+
 let show_optimization (s, t) =
   Printf.sprintf "%s >= %s" (Program.show_h s) (Program.show_h t)
 
@@ -79,6 +89,21 @@ let print_timeouts timeouts =
   List.iter timeouts ~f:print_opt;
   Format.printf "@]"
 
+let result_to_csv result =
+  let rule_to_row r =
+    let open Rule in
+    let (s, t) = List.Assoc.find_exn result.origins ~equal:Rule.equal r in
+    [ Program.show_h r.lhs
+    ; Program.show_h r.rhs
+    ; String.concat (consts r) ~sep:" "
+    ; [%show: int] (Program.total_gas_cost r.lhs - Program.total_gas_cost r.rhs)
+    ; Program.show_h s
+    ; Program.show_h t
+    ; Rule.show_tpdb r
+    ]
+  in
+  outcsv_header :: List.map result.rules ~f:rule_to_row
+
 let get_opts in_csv opt =
   match in_csv with
   | Some file ->
@@ -107,7 +132,7 @@ let () =
           ~doc:"report which rules were generated more than once"
       and ptos = flag "print-timeouts" no_arg
           ~doc:"report which optimizations timed out"
-      and  _ = flag "outcsv" (optional string)
+      and  out_csv = flag "outcsv" (optional string)
           ~doc:"csv write output to csv"
       and opt = anon (maybe (t2 ("LHS" %: string) ("RHS" %: string)))
       in
@@ -122,6 +147,7 @@ let () =
           Out_channel.printf "%s" (Rewrite_system.show result.rules);
         if pdups then print_dups result.duplicates else ();
         if pmuls then print_muls result.multiples else ();
-        if ptos then print_timeouts timeouts else ()
+        if ptos then print_timeouts timeouts else ();
+        Option.iter out_csv ~f:(fun out -> Csv.save out (result_to_csv result))
     ]
   |> Command.run ~version:"1.0"
