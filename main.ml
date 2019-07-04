@@ -5,6 +5,7 @@ type result =
   { rules : Rule.t list
   ; duplicates : Rule.t list
   ; multiples : ((Program.t * Program.t) * Rule.t list) list
+  ; origins : (Rule.t * (Program.t * Program.t)) list
   }
 
 let header =
@@ -35,6 +36,7 @@ let process_optimization result (s, t) =
   { rules = rs'
   ; duplicates = dups' @ result.duplicates
   ; multiples = muls' @ result.multiples
+  ; origins = result.origins @ List.map rs ~f:(fun r -> (r, (s, t)))
   }
 
 let process_optimizations opts =
@@ -49,7 +51,7 @@ let process_optimizations opts =
       Out_channel.flush stderr;
       (result, (s, t) :: timeouts)
   in
-  let result = {rules = []; duplicates = []; multiples = []} in
+  let result = {rules = []; duplicates = []; multiples = []; origins = []} in
   List.fold opts ~init:(result, []) ~f:process_opt_with_timeout
 
 let print_dups dups =
