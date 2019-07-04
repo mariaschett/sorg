@@ -30,6 +30,28 @@ let process_optimization (rs, dups, muls) (s, t) =
   let (rs'', dups') = Rewrite_system.insert_non_dup_rules rs' rs in
   (rs'', dups' @ dups, muls')
 
+let print_dups dups =
+  Format.printf "\nThe following rules were generated more than once:\n";
+  Format.printf "%s" (Rewrite_system.show dups)
+
+let print_muls muls =
+  let print_mul ((s, t), rs) =
+    Format.printf "@[<v 2>%s >= %s@," (Program.show_h s) (Program.show_h t);
+    List.iter rs ~f:(fun r -> Format.printf "%s@," (Rule.show r));
+    Format.printf "@]"
+  in
+  Format.printf "\nThe following optimizations generated multiple rules:";
+  List.iter muls ~f:print_mul
+
+let print_timeouts timeouts =
+  let print_opt (s, t) =
+    Format.printf "%s >= %s@," (Program.show_h s) (Program.show_h t)
+  in
+  Format.printf "\nThe following optimizations timed out:";
+  Format.printf "@[<v>";
+  List.iter timeouts ~f:print_opt;
+  Format.printf "@]"
+
 let () =
   let open Command.Let_syntax in
   Command.basic ~summary:"sorg: A SuperOptimization based Rule Generator"
@@ -40,8 +62,14 @@ let () =
           ~doc:"TO passes timeout TO in seconds to each call to Z3; if one call \
                 times out then sorg gives up for that optimization."
       and tpdb = flag "tpdb" no_arg ~doc:"print output in tpdb format"
-      and  _ = flag "out" (optional string)
-          ~doc:"filename write output to csv file"
+      and pmuls = flag "print-multiples" no_arg
+          ~doc:"report which optimizations gave rise to multiple rules"
+      and pdups = flag "print-duplicates" no_arg
+          ~doc:"report which rules were generated more than once"
+      and ptos = flag "print-timeouts" no_arg
+          ~doc:"report which optimizations timed out"
+      and  _ = flag "outcsv" (optional string)
+          ~doc:"csv write output to csv"
       and opt = anon (maybe (t2 ("LHS" %: string) ("RHS" %: string)))
       in
       fun () ->
@@ -77,8 +105,8 @@ let () =
           Out_channel.printf "%s" (Rewrite_system.show_tpdb rs)
         else
           Out_channel.printf "%s" (Rewrite_system.show rs);
-        Out_channel.printf "\nDups\n%s" (Rewrite_system.show (List.sort ~compare:Rule.compare dups));
-        Out_channel.printf "\nMuls\n%s\n" ([%show: ((Program.t * Program.t) * Rule.t list) list] muls);
-        Out_channel.printf "\nTimeouts\n%s\n" ([%show: (Program.t * Program.t) list] timeouts)
+        if pdups then print_dups dups else ();
+        if pmuls then print_muls muls else ();
+        if ptos then print_timeouts timeouts else ()
     ]
   |> Command.run ~version:"1.0"
