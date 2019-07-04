@@ -31,16 +31,18 @@ let process_optimization (rs, dups, muls) (s, t) =
   (rs'', dups' @ dups, muls')
 
 let process_optimizations opts =
-  List.fold opts ~init:(([], [], []), []) ~f:(fun (rs, tos) (s,t) ->
-      try
-        Out_channel.fprintf stderr "[%s] Generating rules for %s >= %s\n"
-          ([%show: Time.t] (Time.now ())) (Program.show_h s) (Program.show_h t);
-        Out_channel.flush stderr;
-        (process_optimization rs (s,t), tos)
-      with Z3util.Z3_Timeout ->
-        Out_channel.fprintf stderr "[%s] timed out.\n" ([%show: Time.t] (Time.now ()));
-        Out_channel.flush stderr;
-        (rs, (s, t) :: tos))
+  let process_opt_with_timeout (rs, tos) (s,t) =
+    try
+      Out_channel.fprintf stderr "[%s] Generating rules for %s >= %s\n"
+        ([%show: Time.t] (Time.now ())) (Program.show_h s) (Program.show_h t);
+      Out_channel.flush stderr;
+      (process_optimization rs (s,t), tos)
+    with Z3util.Z3_Timeout ->
+      Out_channel.fprintf stderr "[%s] timed out.\n" ([%show: Time.t] (Time.now ()));
+      Out_channel.flush stderr;
+      (rs, (s, t) :: tos)
+  in
+  List.fold opts ~init:(([], [], []), []) ~f:process_opt_with_timeout
 
 let print_dups dups =
   Format.printf "\nThe following rules were generated more than once:\n";
