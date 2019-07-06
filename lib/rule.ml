@@ -4,8 +4,8 @@ open Instruction
 open Subst
 
 type t =
-  { lhs : Program.t;
-    rhs : Program.t;
+  { lhs : Program_schema.t;
+    rhs : Program_schema.t;
   }
 [@@deriving sexp]
 

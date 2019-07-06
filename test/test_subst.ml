@@ -211,8 +211,8 @@ let suite = "suite" >::: [
         let s = [] in
         let p = [PUSH (Const "x")] in
         assert_equal
-          ~cmp:[%eq: Program.t]
-          ~printer:[%show: Program.t]
+          ~cmp:[%eq: Program_schema.t]
+          ~printer:[%show: Program_schema.t]
           p (apply p s)
       );
 
@@ -220,8 +220,8 @@ let suite = "suite" >::: [
         let s = [("x", Val "0")] in
         let p = [PUSH (Const "x")] in
         assert_equal
-          ~cmp:[%eq: Program.t]
-          ~printer:[%show: Program.t]
+          ~cmp:[%eq: Program_schema.t]
+          ~printer:[%show: Program_schema.t]
           [PUSH (Val "0")] (apply p s)
       );
 
@@ -229,8 +229,8 @@ let suite = "suite" >::: [
         let s = [("y", Val "0")] in
         let p = [PUSH (Const "x")] in
         assert_equal
-          ~cmp:[%eq: Program.t]
-          ~printer:[%show: Program.t]
+          ~cmp:[%eq: Program_schema.t]
+          ~printer:[%show: Program_schema.t]
           p (apply p s)
       );
 
@@ -238,8 +238,8 @@ let suite = "suite" >::: [
         let s = [("x", Val "0")] in
         let p = [ADD] in
         assert_equal
-          ~cmp:[%eq: Program.t]
-          ~printer:[%show: Program.t]
+          ~cmp:[%eq: Program_schema.t]
+          ~printer:[%show: Program_schema.t]
           p (apply p s)
       );
 
@@ -247,8 +247,8 @@ let suite = "suite" >::: [
         let s = [("x", Val "0")] in
         let p = [PUSH (Const "x"); PUSH (Const "x")] in
         assert_equal
-          ~cmp:[%eq: Program.t]
-          ~printer:[%show: Program.t]
+          ~cmp:[%eq: Program_schema.t]
+          ~printer:[%show: Program_schema.t]
           [PUSH (Val "0"); PUSH (Val "0")] (apply p s)
       );
 

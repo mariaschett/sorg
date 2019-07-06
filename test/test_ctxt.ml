@@ -18,8 +18,8 @@ let suite = "suite" >::: [
     "Apply empty context">::(fun _ ->
         let s = [POP] in
         assert_equal
-          ~cmp:[%eq: Program.t]
-          ~printer:[%show: Program.t]
+          ~cmp:[%eq: Program_schema.t]
+          ~printer:[%show: Program_schema.t]
           s (apply ([], []) s)
       );
 
@@ -27,8 +27,8 @@ let suite = "suite" >::: [
         let s = [POP] in
         let pre = [ADD] in
         assert_equal
-          ~cmp:[%eq: Program.t]
-          ~printer:[%show: Program.t]
+          ~cmp:[%eq: Program_schema.t]
+          ~printer:[%show: Program_schema.t]
           (pre @ s) (apply (pre, []) s)
       );
 
@@ -36,8 +36,8 @@ let suite = "suite" >::: [
         let s = [POP] in
         let post = [ADD] in
         assert_equal
-          ~cmp:[%eq: Program.t]
-          ~printer:[%show: Program.t]
+          ~cmp:[%eq: Program_schema.t]
+          ~printer:[%show: Program_schema.t]
           (s @ post) (apply ([], post) s)
       );
 
@@ -46,8 +46,8 @@ let suite = "suite" >::: [
         let pre = [SUB] in
         let post = [ADD] in
         assert_equal
-          ~cmp:[%eq: Program.t]
-          ~printer:[%show: Program.t]
+          ~cmp:[%eq: Program_schema.t]
+          ~printer:[%show: Program_schema.t]
           (pre @ s @ post) (apply (pre, post) s)
       );
 
@@ -155,25 +155,25 @@ let suite = "suite" >::: [
 
     "Do not strip anything">::(fun _ ->
         let t = [POP] in
-        assert_equal ~cmp:[%eq: Program.t] ~printer:[%show: Program.t]
+        assert_equal ~cmp:[%eq: Program_schema.t] ~printer:[%show: Program_schema.t]
           t (strip_ctxt 0 0 t)
       );
 
     "Remove prefix">::(fun _ ->
         let t = [POP] in
-        assert_equal ~cmp:[%eq: Program.t] ~printer:[%show: Program.t]
+        assert_equal ~cmp:[%eq: Program_schema.t] ~printer:[%show: Program_schema.t]
           [] (strip_ctxt 1 0 t)
       );
 
     "Remove postfix">::(fun _ ->
         let t = [POP] in
-        assert_equal ~cmp:[%eq: Program.t] ~printer:[%show: Program.t]
+        assert_equal ~cmp:[%eq: Program_schema.t] ~printer:[%show: Program_schema.t]
           [] (strip_ctxt 0 1 t)
       );
 
     "Remove pre- and postfix">::( fun _ ->
         let t = [POP; POP; POP] in
-        assert_equal ~cmp:[%eq: Program.t] ~printer:[%show: Program.t]
+        assert_equal ~cmp:[%eq: Program_schema.t] ~printer:[%show: Program_schema.t]
           [POP] (strip_ctxt 1 1 t)
       );
 
@@ -186,37 +186,37 @@ let suite = "suite" >::: [
 
     "No common prefix">::(fun _ ->
         let s = [POP] and t = [ADD] in
-        assert_equal ~cmp:[%eq: Program.t] ~printer:[%show: Program.t]
+        assert_equal ~cmp:[%eq: Program_schema.t] ~printer:[%show: Program_schema.t]
           [] (common_prefix s t)
       );
 
     "Common prefix of length 1">::(fun _ ->
         let s = [POP] and t = [POP; ADD] in
-        assert_equal ~cmp:[%eq: Program.t] ~printer:[%show: Program.t]
+        assert_equal ~cmp:[%eq: Program_schema.t] ~printer:[%show: Program_schema.t]
           [POP] (common_prefix s t)
       );
 
     "Common prefix of empty programs">::(fun _ ->
         let s = [] and t = [] in
-        assert_equal ~cmp:[%eq: Program.t] ~printer:[%show: Program.t]
+        assert_equal ~cmp:[%eq: Program_schema.t] ~printer:[%show: Program_schema.t]
           [] (common_prefix s t)
       );
 
     "Common prefix of length n">::(fun _ ->
         let s = [POP; POP] in
-        assert_equal ~cmp:[%eq: Program.t] ~printer:[%show: Program.t]
+        assert_equal ~cmp:[%eq: Program_schema.t] ~printer:[%show: Program_schema.t]
           s (common_prefix s s)
       );
 
     "Common prefix, but different programs">::(fun _ ->
         let s = [POP; ADD] and t = [POP; SUB] in
-        assert_equal ~cmp:[%eq: Program.t] ~printer:[%show: Program.t]
+        assert_equal ~cmp:[%eq: Program_schema.t] ~printer:[%show: Program_schema.t]
           [POP] (common_prefix s t)
       );
 
     "No common prefix for PUSHs">::(fun _ ->
         let s = [PUSH (Const "x")] and t = [PUSH (Const "y")] in
-        assert_equal ~cmp:[%eq: Program.t] ~printer:[%show: Program.t]
+        assert_equal ~cmp:[%eq: Program_schema.t] ~printer:[%show: Program_schema.t]
           [] (common_prefix s t)
       );
 
@@ -224,13 +224,13 @@ let suite = "suite" >::: [
 
     "No common postfix for PUSHs">::(fun _ ->
         let s = [PUSH (Const "x")] and t = [PUSH (Const "y")] in
-        assert_equal ~cmp:[%eq: Program.t] ~printer:[%show: Program.t]
+        assert_equal ~cmp:[%eq: Program_schema.t] ~printer:[%show: Program_schema.t]
           [] (common_postfix s t)
       );
 
     "Common postfixs with remainder">::(fun _ ->
         let s = [ADD; ADD; POP] and t = [SUB; ADD; POP] in
-        assert_equal ~cmp:[%eq: Program.t] ~printer:[%show: Program.t]
+        assert_equal ~cmp:[%eq: Program_schema.t] ~printer:[%show: Program_schema.t]
           [ADD; POP] (common_postfix s t)
       );
   ]

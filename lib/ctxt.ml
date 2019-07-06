@@ -4,7 +4,7 @@ open Instruction
 
 exception Not_enough_context
 
-type t = Program.t * Program.t [@@deriving sexp, equal]
+type t = Program_schema.t * Program_schema.t [@@deriving sexp, equal]
 
 let pp fmt (pre, post) =
   Format.fprintf fmt "@[(%a, %a)@]" Program.pp_h pre Program.pp_h post
