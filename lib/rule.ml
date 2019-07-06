@@ -6,11 +6,9 @@ open Program_schema
 type t =
   { lhs : Program_schema.t;
     rhs : Program_schema.t;
-  }
-[@@deriving sexp]
+  } [@@deriving sexp]
 
-let equal r1 r2 =
-  alpha_equal (r1.lhs @ r1.rhs) (r2.lhs @ r2.rhs)
+let equal r1 r2 = alpha_equal (r1.lhs @ r1.rhs) (r2.lhs @ r2.rhs)
 
 let compare r1 r2 =
   let compare_instr i1 i2 = match (i1, i2) with
