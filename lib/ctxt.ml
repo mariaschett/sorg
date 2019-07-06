@@ -4,13 +4,13 @@ exception Not_enough_context
 
 type t = Program_schema.t * Program_schema.t [@@deriving sexp, equal]
 
+let compare c1 c2 =
+  Tuple.T2.compare ~cmp1:Program_schema.compare ~cmp2:Program_schema.compare c1 c2
+
 let pp fmt (pre, post) =
   Format.fprintf fmt "@[(%a, %a)@]" Program_schema.pp pre Program_schema.pp post
 
 let show p = pp Format.str_formatter p |> Format.flush_str_formatter
-
-let compare c1 c2 =
-  Tuple.T2.compare ~cmp1:Program_schema.compare ~cmp2:Program_schema.compare c1 c2
 
 let apply (pre, post) s = pre @ s @ post
 
