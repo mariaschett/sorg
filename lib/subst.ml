@@ -6,11 +6,6 @@ open Stackarg
 type vvar = constarg [@@deriving show { with_path = false }, sexp, compare, equal]
 type vval = Stackarg.t [@@deriving show { with_path = false }, sexp, compare, equal]
 
-let show_vval = function
-  | Val n -> n
-  | Const y -> y
-  | Tmpl -> failwith "No Template variables allowed"
-
 type ventr = (vvar * vval) [@@deriving show { with_path = false }, sexp, compare, equal]
 type t = ventr list [@@deriving show { with_path = false }, sexp, compare]
 
