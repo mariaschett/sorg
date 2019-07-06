@@ -20,30 +20,25 @@ let eq_mod_push_arg i i' = match i, i' with
   | PUSH _, PUSH _ -> true
   | _ -> [%eq: Instruction.t] i i'
 
-let rec strip_all r = List.dedup_and_sort ~compare:Rule.compare ([r] @ strip_fst r @ strip_last r @ strip_both r)
-and
-  strip_fst r = match r.lhs, r.rhs with
-  | i1 :: l', i2 :: r' when eq_mod_push_arg i1 i2 ->
-    if equiv l' r' then strip_all {lhs = l'; rhs = r'} else []
-  | _, _ -> []
-and
-  strip_last r = match List.rev r.lhs, List.rev r.rhs with
-  | j1 :: rl', j2 :: rr' when eq_mod_push_arg j1 j2 ->
-    let l' = List.rev rl' and r' = List.rev rr' in
-    if equiv l' r' then strip_all {lhs = l'; rhs = r'} else []
-  | _, _ -> []
-and
-  strip_both r = match r.lhs, r.rhs with
-  | i1 :: l', i2 :: r' when eq_mod_push_arg i1 i2 ->
-    (match List.rev l', List.rev r' with
-     | j1 :: rl'', j2 :: rr'' when eq_mod_push_arg j1 j2 ->
-       let l'' = List.rev rl'' and r'' = List.rev rr'' in
-       if equiv l'' r'' then strip_all {lhs = l''; rhs = r''} else []
-     | _, _ -> [])
-  | _, _ -> []
+let rec strip' rs r = function
+  | [] -> rs
+  | (i,j) :: idx ->
+    let l' = Ctxt.strip_ctxt i j r.lhs and r' = Ctxt.strip_ctxt i j r.rhs in
+    if equiv l' r'
+    then
+      let rs' = {lhs = l'; rhs = r'} :: rs in
+      let idx' = List.filter idx ~f:(fun (i',j') -> not (i' < i && j' < j)) in
+      strip' rs' r idx'
+    else
+      let idx' = List.filter idx ~f:(fun (i',j') -> not (i' > i && j' > j) ) in
+      strip' rs r idx'
 
 let strip r =
-  let sr = strip_all r in
+  let k = List.length (Ctxt.common_prefix r.lhs r.rhs) in
+  let m = List.length (Ctxt.common_postfix r.lhs r.rhs) in
+  let idxs = Subst.n_cartesian_product [(List.init (k+1) ~f:Fn.id);(List.init (m+1) ~f:Fn.id)] in
+  let idxs_pairs = List.map idxs ~f:(fun idx -> match idx with [i; j] -> (i,j) | _ -> failwith "strip_all" ) in
+  let sr = strip' [] r idxs_pairs in
   let most_context r = not (List.exists sr ~f:(fun r' ->
       not ([%eq: Rule.t] r r') &&
       is_subrule r' r))

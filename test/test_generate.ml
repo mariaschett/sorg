@@ -63,46 +63,34 @@ let suite = "suite" >::: [
         assert_bool "" (not (equiv s t))
       );
 
-    (* strip_all *)
+    (* strip *)
 
     "Remove superflous prefix" >::(fun _ ->
         let r = {lhs = [POP; PUSH (Val "0"); ADD]; rhs = [POP]}
         in
         assert_equal ~cmp:[%eq: Rewrite_system.t] ~printer:[%show: Rewrite_system.t]
-          [r; {lhs = [PUSH (Val "0"); ADD]; rhs = []}] (strip_all r)
+          [{lhs = [PUSH (Val "0"); ADD]; rhs = []}] (strip r)
       );
 
     "Removing prefix is not correct" >::(fun _ ->
         let r = {lhs = [CALLVALUE; DUP I]; rhs = [CALLVALUE; CALLVALUE]}
         in
         assert_equal ~cmp:[%eq: Rewrite_system.t] ~printer:[%show: Rewrite_system.t]
-          [r] (strip_all r)
+          [r] (strip r)
       );
 
     "Remove superflous suffix" >::(fun _ ->
         let r = {lhs = [PUSH (Val "0"); ADD; POP]; rhs = [POP]}
         in
         assert_equal ~cmp:[%eq: Rewrite_system.t] ~printer:[%show: Rewrite_system.t]
-          [r; {lhs = [PUSH (Val "0"); ADD]; rhs = []}] (strip_all r)
+          [{lhs = [PUSH (Val "0"); ADD]; rhs = []}] (strip r)
       );
 
     "Removing suffix is not correct" >::(fun _ ->
         let r = {lhs = [PUSH (Val "2"); POP]; rhs = [ADDRESS; POP]}
         in
         assert_equal ~cmp:[%eq: Rewrite_system.t] ~printer:[%show: Rewrite_system.t]
-          [r] (strip_all r)
-      );
-
-    "Three rules from same context">::(fun _ ->
-        let r = {lhs = [PUSH (Val "0"); ADD]; rhs = []}
-        in
-        assert_equal ~cmp:[%eq: Rewrite_system.t] ~printer:[%show: Rewrite_system.t]
-          [ {lhs = [POP] @ r.lhs @ [POP]; rhs = [POP] @ r.rhs @ [POP]};
-            {lhs = r.lhs @ [POP]; rhs = r.rhs @ [POP]};
-            {lhs = [POP] @ r.lhs; rhs = [POP] @ r.rhs};
-            r;
-          ]
-          (strip_all {lhs = [POP] @ r.lhs @ [POP]; rhs = [POP] @ r.rhs @ [POP]})
+          [r] (strip r)
       );
 
     (* generate_rules *)
