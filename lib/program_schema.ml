@@ -32,3 +32,12 @@ let maximal_schema c_0 =
       | Some i_a -> (c + 1, p @ [i_a])
       | None -> (c, p @ [i])
     )
+
+let pp_tpdb fmt ?(var="P") p =
+  let len = List.length p in
+  let rec pp fmt = function
+    | PUSH x :: is -> Format.fprintf fmt "%s%a%s%a" "PUSH(" Stackarg.pp x ", " pp is
+    | i :: is -> Format.fprintf fmt "%a%s%a" Instruction.pp i "(" pp is
+    | [] -> Format.fprintf fmt "%s%s" var (String.init len ~f:(fun _ -> ')'))
+  in
+  pp fmt p

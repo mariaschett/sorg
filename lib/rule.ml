@@ -34,19 +34,10 @@ let is_subrule r r' =
   let ctxts = Ctxt.all_ctxts r.lhs r'.lhs in
   List.exists ctxts ~f:(fun c -> Program.equal (Ctxt.apply c r.rhs) r'.rhs)
 
-let pp_tpdb_program fmt ?(var="P") p =
-  let len = List.length p in
-  let rec pp fmt = function
-    | PUSH x :: is -> Format.fprintf fmt "%s%a%s%a" "PUSH(" Stackarg.pp x ", " pp is
-    | i :: is -> Format.fprintf fmt "%a%s%a" Instruction.pp i "(" pp is
-    | [] -> Format.fprintf fmt "%s%s" var (String.init len ~f:(fun _ -> ')'))
-  in
-  pp fmt p
-
 let pp_tpdb fmt ?(var="P") r =
   Format.fprintf fmt "@[<hov 2>%a ->@ %a@]"
-    (pp_tpdb_program ~var:var) r.lhs
-    (pp_tpdb_program ~var:var) r.rhs
+    (Program_schema.pp_tpdb ~var:var) r.lhs
+    (Program_schema.pp_tpdb ~var:var) r.rhs
 
 let show_tpdb ?(var="P") r =
   pp_tpdb Format.str_formatter ~var:var r |> Format.flush_str_formatter
