@@ -11,6 +11,14 @@ let alpha_equal p1 p2 = match (match_opt p1 p2, match_opt p2 p1) with
   | (Some _, Some _) -> true
   | _ -> false
 
+let compare s t =
+  (* Ebso.Instruction ignores argument of PUSH for comparison *)
+  let compare_instr i1 i2 = match (i1, i2) with
+    | PUSH x, PUSH y -> Stackarg.compare x y
+    | _, _ -> Instruction.compare i1 i2
+  in
+  List.compare compare_instr s t
+
 let equiv =
   let is_translation_valid s t =
     (* candidate instruction set is irrelevant, hence [] *)

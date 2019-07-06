@@ -1,6 +1,5 @@
 open Core
 open Ebso
-open Instruction
 open Program_schema
 
 type t =
@@ -11,12 +10,10 @@ type t =
 let equal r1 r2 = alpha_equal (r1.lhs @ r1.rhs) (r2.lhs @ r2.rhs)
 
 let compare r1 r2 =
-  let compare_instr i1 i2 = match (i1, i2) with
-    | PUSH x, PUSH y -> Stackarg.compare x y
-    | _, _ -> Instruction.compare i1 i2
-  in
-  if equal r1 r2 then 0 else
-    List.compare compare_instr (r1.lhs @ r1.rhs) (r2.lhs @ r2.rhs)
+  (* equal is alpha-equal here, that isn't the case for program_schemas *)
+  if equal r1 r2
+  then 0
+  else Program_schema.compare (r1.lhs @ r1.rhs) (r2.lhs @ r2.rhs)
 
 let pp fmt r =
   Format.fprintf fmt "@[%a => %a@]" Program.pp_h r.lhs Program.pp_h r.rhs

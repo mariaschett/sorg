@@ -1,6 +1,5 @@
 open Core
 open Ebso
-open Instruction
 
 exception Not_enough_context
 
@@ -12,14 +11,7 @@ let pp fmt (pre, post) =
 let show p = pp Format.str_formatter p |> Format.flush_str_formatter
 
 let compare c1 c2 =
-  let compare_instr i1 i2 = match (i1, i2) with
-    | PUSH x, PUSH y -> Stackarg.compare x y
-    | _, _ -> Instruction.compare i1 i2
-  in
-  Tuple.T2.compare
-    ~cmp1:(List.compare compare_instr)
-    ~cmp2:(List.compare compare_instr)
-    c1 c2
+  Tuple.T2.compare ~cmp1:Program_schema.compare ~cmp2:Program_schema.compare c1 c2
 
 let apply (pre, post) s = pre @ s @ post
 
