@@ -43,20 +43,20 @@ let suite = "suite" >::: [
           (Some (PUSH (Const x))) (instruction_schema x i)
       );
 
-    (* maximal_program_schema *)
+    (* maximal_schema *)
 
     "Empty program is a maximal program schema">::(fun _ ->
         let p = [] in
         assert_equal
           ~cmp:[%eq: int * Program_schema.t] ~printer:[%show: int * Program_schema.t]
-          (0, p) (maximal_program_schema 0 p)
+          (0, p) (maximal_schema 0 p)
       );
 
     "A program without PUSH is a maximal program schema">::(fun _ ->
         let p = [DUP I; SWAP I] in
         assert_equal
           ~cmp:[%eq: int * Program_schema.t] ~printer:[%show: int * Program_schema.t]
-          (0, p) (maximal_program_schema 0 p)
+          (0, p) (maximal_schema 0 p)
       );
 
     "Compute a program schema with PUSH (Val n) and PUSH (Const c)">::(fun _ ->
@@ -65,7 +65,7 @@ let suite = "suite" >::: [
         assert_equal
         ~cmp:(fun (i, p) (i', p') -> i = i' && alpha_equal p p')
         ~printer:[%show: int * Program_schema.t]
-        (2, p') (maximal_program_schema 0 p)
+        (2, p') (maximal_schema 0 p)
       );
   ]
 

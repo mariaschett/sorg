@@ -13,7 +13,7 @@ let instruction_schema x = function
   | PUSH (Val _) -> Some (PUSH (Const x))
   | _ -> None
 
-let maximal_program_schema c_0 =
+let maximal_schema c_0 =
   let fresh_var c = "w_" ^ Int.to_string c in
   List.fold_left ~init:(c_0, []) ~f:(fun (c, p) i ->
       match instruction_schema (fresh_var c) i with

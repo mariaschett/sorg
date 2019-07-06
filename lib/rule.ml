@@ -28,8 +28,8 @@ let show r = pp Format.str_formatter r |> Format.flush_str_formatter
 let consts r = List.stable_dedup (Program.consts r.lhs @ Program.consts r.rhs)
 
 let maximal_rule_schema r =
-  let (c_lhs, lhs_schema) = maximal_program_schema 0 r.lhs in
-  let (_, rhs_schema) = maximal_program_schema c_lhs r.rhs in
+  let (c_lhs, lhs_schema) = maximal_schema 0 r.lhs in
+  let (_, rhs_schema) = maximal_schema c_lhs r.rhs in
   {lhs = lhs_schema; rhs = rhs_schema}
 
 let match_opt gr sr =
