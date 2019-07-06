@@ -7,6 +7,13 @@ let equal rs1 rs2 =
   let module RS = Set.Make_plain(Rule) in
   Set.equal (RS.of_list rs1) (RS.of_list rs2)
 
+let pp fmt rs =
+  Format.fprintf fmt "@[<v>";
+  List.iter rs ~f:(Format.fprintf fmt "%a@," Rule.pp);
+  Format.fprintf fmt "@]"
+
+let show rs = pp Format.str_formatter rs |> Format.flush_str_formatter
+
 let contains_rule rs r = List.mem rs r ~equal:[%eq: Rule.t] (* identifies alpha equvivalent rules *)
 
 let size = List.length
@@ -25,13 +32,6 @@ let insert_non_dup_rules rs' rs =
     if contains_rule rs r then (rs, r :: dups) else (r :: rs, dups)
   in
   List.fold rs' ~init:(rs, []) ~f:insert
-
-let pp fmt rs =
-  Format.fprintf fmt "@[<v>";
-  List.iter rs ~f:(Format.fprintf fmt "%a@," Rule.pp);
-  Format.fprintf fmt "@]"
-
-let show rs = pp Format.str_formatter rs |> Format.flush_str_formatter
 
 let vars rs = List.stable_dedup @@ List.concat_map rs ~f:Rule.vars
 
