@@ -1,5 +1,4 @@
 open Core
-open Ebso
 open Program_schema
 
 type t =
@@ -20,7 +19,7 @@ let pp fmt r =
 
 let show r = pp Format.str_formatter r |> Format.flush_str_formatter
 
-let consts r = List.stable_dedup (Program.consts r.lhs @ Program.consts r.rhs)
+let vars r = List.stable_dedup (Program_schema.vars r.lhs @ Program_schema.vars r.rhs)
 
 let maximal_rule_schema r =
   let (c_lhs, lhs_schema) = maximal_schema 0 r.lhs in
@@ -29,7 +28,7 @@ let maximal_rule_schema r =
 
 let is_subrule r r' =
   let ctxts = Ctxt.all_ctxts r.lhs r'.lhs in
-  List.exists ctxts ~f:(fun c -> Program.equal (Ctxt.apply c r.rhs) r'.rhs)
+  List.exists ctxts ~f:(fun c -> Program_schema.equal (Ctxt.apply c r.rhs) r'.rhs)
 
 let pp_tpdb fmt ?(var="P") r =
   Format.fprintf fmt "@[<hov 2>%a ->@ %a@]"

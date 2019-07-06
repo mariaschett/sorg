@@ -31,6 +31,8 @@ let equiv =
     | Some _ -> false
   in is_translation_valid
 
+let vars = Program.consts
+
 let instruction_schema x = function
   | PUSH (Val _) -> Some (PUSH (Const x))
   | _ -> None

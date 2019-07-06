@@ -95,7 +95,7 @@ let result_to_csv result =
     let (s, t) = List.Assoc.find_exn result.origins ~equal:Rule.equal r in
     [ Program.show_h r.lhs
     ; Program.show_h r.rhs
-    ; String.concat (consts r) ~sep:" "
+    ; String.concat (vars r) ~sep:" "
     ; [%show: int] (Program.total_gas_cost r.lhs - Program.total_gas_cost r.rhs)
     ; Program.show_h s
     ; Program.show_h t
