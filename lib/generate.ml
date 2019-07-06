@@ -1,13 +1,7 @@
 open Core
-open Ebso
-open Instruction
 open Rule
 open Subst
 open Program_schema
-
-let eq_mod_push_arg i i' = match i, i' with
-  | PUSH _, PUSH _ -> true
-  | _ -> [%eq: Instruction.t] i i'
 
 let rec strip' rs r = function
   | [] -> rs
