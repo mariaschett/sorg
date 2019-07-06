@@ -29,6 +29,8 @@ let is_subrule r r' =
   let ctxts = Ctxt.all_ctxts r.lhs r'.lhs in
   List.exists ctxts ~f:(fun c -> Program_schema.equal (Ctxt.apply c r.rhs) r'.rhs)
 
+(* print in tpdb format *)
+
 let pp_tpdb fmt ?(var="P") r =
   Format.fprintf fmt "@[<hov 2>%a ->@ %a@]"
     (Program_schema.pp_tpdb ~var:var) r.lhs

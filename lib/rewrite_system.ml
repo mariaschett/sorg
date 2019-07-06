@@ -35,6 +35,8 @@ let show rs = pp Format.str_formatter rs |> Format.flush_str_formatter
 
 let vars rs = List.stable_dedup @@ List.concat_map rs ~f:Rule.vars
 
+(* print in tpdb format *)
+
 let pp_tpdb fmt ?(var="P") rs =
   Format.fprintf fmt "@[<v>(VAR@[<hov>@ %s" var;
   List.iter (vars rs) ~f:(fun v -> Format.fprintf fmt "@ %s" v);

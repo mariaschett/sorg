@@ -45,6 +45,8 @@ let maximal_schema c_0 =
       | None -> (c, p @ [i])
     )
 
+(* print in tpdb format *)
+
 let pp_tpdb fmt ?(var="P") p =
   let len = List.length p in
   let rec pp fmt = function
