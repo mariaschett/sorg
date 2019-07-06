@@ -62,13 +62,7 @@ let binding_alts x s =
 
 let all_binding_alts s = List.map (dom s) ~f:(fun x -> binding_alts x s)
 
-let rec n_cartesian_product = function
-| [] -> [[]]
-| xs :: yys ->
-    List.concat_map
-      xs ~f:(fun x -> List.map (n_cartesian_product yys) ~f:(fun ys -> x :: ys))
-
-let all_subst_alts s = n_cartesian_product (all_binding_alts s)
+let all_subst_alts s = Util.n_cartesian_product (all_binding_alts s)
 
 (* providing program t which contains dom (s1 \cup dom s2) is
    simplification to use existing functionality *)

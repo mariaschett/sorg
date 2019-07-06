@@ -1,5 +1,5 @@
 (executables
- (names test_generate test_rule test_rewrite_system test_subst test_ctxt)
+ (names test_generate test_rule test_rewrite_system test_subst test_ctxt test_util)
  (libraries core ebso oUnit sorg)
  (preprocess (pps ppx_deriving.std))
 )
@@ -31,5 +31,11 @@
 (alias
  (name runtest)
  (deps (:x test_ctxt.exe))
+ (action (run %{x}))
+)
+
+(alias
+ (name runtest)
+ (deps (:x test_util.exe))
  (action (run %{x}))
 )
