@@ -16,7 +16,7 @@ let compare r1 r2 =
   else Program_schema.compare (r1.lhs @ r1.rhs) (r2.lhs @ r2.rhs)
 
 let pp fmt r =
-  Format.fprintf fmt "@[%a => %a@]" Program.pp_h r.lhs Program.pp_h r.rhs
+  Format.fprintf fmt "@[%a => %a@]" Program_schema.pp r.lhs Program_schema.pp r.rhs
 
 let show r = pp Format.str_formatter r |> Format.flush_str_formatter
 

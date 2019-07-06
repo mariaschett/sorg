@@ -19,6 +19,8 @@ let compare s t =
   in
   List.compare compare_instr s t
 
+let pp = Program.pp_h
+
 let equiv =
   let is_translation_valid s t =
     (* candidate instruction set is irrelevant, hence [] *)

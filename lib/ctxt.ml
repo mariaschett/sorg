@@ -1,12 +1,11 @@
 open Core
-open Ebso
 
 exception Not_enough_context
 
 type t = Program_schema.t * Program_schema.t [@@deriving sexp, equal]
 
 let pp fmt (pre, post) =
-  Format.fprintf fmt "@[(%a, %a)@]" Program.pp_h pre Program.pp_h post
+  Format.fprintf fmt "@[(%a, %a)@]" Program_schema.pp pre Program_schema.pp post
 
 let show p = pp Format.str_formatter p |> Format.flush_str_formatter
 
