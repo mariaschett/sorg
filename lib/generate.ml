@@ -1,13 +1,11 @@
 open Core
 open Rule
-open Subst
-open Program_schema
 
 let rec strip' rs r = function
   | [] -> rs
   | (i,j) :: idx ->
     let l' = Ctxt.strip_ctxt i j r.lhs and r' = Ctxt.strip_ctxt i j r.rhs in
-    if equiv l' r'
+    if Program_schema.equiv l' r'
     then
       let rs' = {lhs = l'; rhs = r'} :: rs in
       let idx' = List.filter idx ~f:(fun (i',j') -> not (i' < i && j' < j)) in
@@ -30,14 +28,14 @@ let strip r =
 let rec generalize' rs r_0 t = function
   | [] -> rs
   | s :: ss ->
-    let l' = apply r_0.lhs s and r' = apply r_0.rhs s in
-    if equiv l' r'
+    let l' = Subst.apply r_0.lhs s and r' = Subst.apply r_0.rhs s in
+    if Program_schema.equiv l' r'
     then
       let rs' = Rewrite_system.insert_max_general {lhs = l'; rhs = r'} rs in
-      let ss' = rm_less_general t s ss in
+      let ss' = Subst.rm_less_general t s ss in
       generalize' rs' r_0 t ss'
     else
-      let ss' = rm_more_general t s ss in
+      let ss' = Subst.rm_more_general t s ss in
       generalize' rs r_0 t ss'
 
 let generalize r =
