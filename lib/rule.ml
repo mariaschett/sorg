@@ -1,12 +1,11 @@
 open Core
-open Program_schema
 
 type t =
   { lhs : Program_schema.t;
     rhs : Program_schema.t;
   } [@@deriving sexp]
 
-let equal r1 r2 = alpha_equal (r1.lhs @ r1.rhs) (r2.lhs @ r2.rhs)
+let equal r1 r2 = Program_schema.alpha_equal (r1.lhs @ r1.rhs) (r2.lhs @ r2.rhs)
 
 let compare r1 r2 =
   (* equal is alpha-equal here, that isn't the case for program_schemas *)
@@ -22,8 +21,8 @@ let show r = pp Format.str_formatter r |> Format.flush_str_formatter
 let vars r = List.stable_dedup (Program_schema.vars r.lhs @ Program_schema.vars r.rhs)
 
 let maximal_rule_schema r =
-  let (c_lhs, lhs_schema) = maximal_schema 0 r.lhs in
-  let (_, rhs_schema) = maximal_schema c_lhs r.rhs in
+  let (c_lhs, lhs_schema) = Program_schema.maximal_schema 0 r.lhs in
+  let (_, rhs_schema) = Program_schema.maximal_schema c_lhs r.rhs in
   {lhs = lhs_schema; rhs = rhs_schema}
 
 let is_subrule r r' =
