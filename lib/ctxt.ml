@@ -2,6 +2,8 @@ open Core
 open Ebso
 open Instruction
 
+exception Not_enough_context
+
 type t = Program.t * Program.t [@@deriving sexp, equal]
 
 let pp fmt (pre, post) =
@@ -37,3 +39,15 @@ let rec all_ctxts s t = match (s, t) with
   | [], [] -> [([], [])]
   | [], _  -> [([], t); (t, [])]
   | _, []  -> []
+
+let strip_ctxt i j t =
+  if i + j <= List.length t
+  then List.sub ~pos:i ~len:(List.length t - i - j) t
+  else raise Not_enough_context
+
+let rec common_prefix ss ts = match ss, ts with
+  | s :: ss', t :: ts' when s = t -> s :: (common_prefix ss' ts')
+  | _, _ -> []
+
+let common_postfix ss ts =
+  List.rev (common_prefix (List.rev ss) (List.rev ts))
