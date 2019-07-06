@@ -1,6 +1,25 @@
 open Core
 open Rule
 
+let rec generalize' rs r_0 t = function
+  | [] -> rs
+  | s :: ss ->
+    let l' = Subst.apply r_0.lhs s and r' = Subst.apply r_0.rhs s in
+    if Program_schema.equiv l' r'
+    then
+      let rs' = Rewrite_system.insert_max_general {lhs = l'; rhs = r'} rs in
+      let ss' = Subst.rm_less_general t s ss in
+      generalize' rs' r_0 t ss'
+    else
+      let ss' = Subst.rm_more_general t s ss in
+      generalize' rs r_0 t ss'
+
+let generalize r =
+  let r_0 = maximal_rule_schema r in
+  let s_0 = Option.value_exn (Subst.match_opt (r_0.lhs @ r_0.rhs) (r.lhs @ r.rhs)) in
+  let ss = List.sort (Subst.all_subst_alts s_0) ~compare:(fun s s' -> Subst.compare s' s) in
+  generalize' [] r_0 (r_0.lhs @ r_0.rhs) ss
+
 let rec strip' rs r = function
   | [] -> rs
   | (i,j) :: idx ->
@@ -24,25 +43,6 @@ let strip r =
       is_subrule r' r))
   in
   List.filter sr ~f:most_context
-
-let rec generalize' rs r_0 t = function
-  | [] -> rs
-  | s :: ss ->
-    let l' = Subst.apply r_0.lhs s and r' = Subst.apply r_0.rhs s in
-    if Program_schema.equiv l' r'
-    then
-      let rs' = Rewrite_system.insert_max_general {lhs = l'; rhs = r'} rs in
-      let ss' = Subst.rm_less_general t s ss in
-      generalize' rs' r_0 t ss'
-    else
-      let ss' = Subst.rm_more_general t s ss in
-      generalize' rs r_0 t ss'
-
-let generalize r =
-  let r_0 = maximal_rule_schema r in
-  let s_0 = Option.value_exn (Subst.match_opt (r_0.lhs @ r_0.rhs) (r.lhs @ r.rhs)) in
-  let ss = List.sort (Subst.all_subst_alts s_0) ~compare:(fun s s' -> Subst.compare s' s) in
-  generalize' [] r_0 (r_0.lhs @ r_0.rhs) ss
 
 let generate_rules s t =
   let gr = generalize {lhs = s; rhs = t} in
