@@ -45,7 +45,7 @@ let suite = "suite" >::: [
         in
         assert_equal
           ~printer:Fn.id
-          "(VAR x)\n\
+          "(VAR P x)\n\
            (RULES\n\
            \ \ PUSH(0, PUSH(x, ADD(P))) -> PUSH(x, P)\n\
            \ \ DUP1(SWAP1(P)) -> P\n\
