@@ -62,18 +62,6 @@ let suite = "suite" >::: [
           r' (maximal_rule_schema r)
       );
 
-    (* match_opt *)
-
-    "Find substitituion between general program and instantiated program">::(fun _ ->
-        let gr = {lhs = [PUSH (Const "x"); PUSH (Const "y"); ADD];
-                  rhs = [PUSH (Const "z")]} in
-        let sr = {lhs = [PUSH (Val "0"); PUSH (Val "0"); ADD];
-                  rhs = [PUSH (Val "0")]} in
-        assert_equal
-          ~cmp:[%eq: Subst.t option] ~printer:[%show: Subst.t option]
-        (Some [("x", Val "0"); ("y", Val "0"); ("z", Val "0")]) (match_opt gr sr)
-      );
-
     (* is_subrule *)
 
     "A rule is a subrule of itself" >:: (fun _ ->
