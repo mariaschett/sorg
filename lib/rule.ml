@@ -52,8 +52,6 @@ let maximal_rule_schema r =
 let match_opt gr sr =
   Subst.match_opt (gr.lhs @ gr.rhs) (sr.lhs @ sr.rhs)
 
-let apply r s = {lhs = apply r.lhs s; rhs = apply r.rhs s;}
-
 let is_subrule r r' =
   let ctxts = Ctxt.all_ctxts r.lhs r'.lhs in
   List.exists ctxts ~f:(fun c -> Program.equal (Ctxt.apply c r.rhs) r'.rhs)
