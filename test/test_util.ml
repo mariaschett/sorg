@@ -2,13 +2,17 @@ open Core
 open OUnit2
 open Util
 
+let sort_n_cartesian_product = List.sort ~compare:(List.compare Int.compare)
 let comp_n_cartesian_product l1 l2 =
-  let sort_n_cartesian_product = List.sort ~compare:(List.compare Int.compare) in
   (sort_n_cartesian_product l1) = (sort_n_cartesian_product l2)
-
 let show_n_cartesian_product l =
-  let sort_n_cartesian_product = List.sort ~compare:(List.compare Int.compare) in
   [%show: int list list] (sort_n_cartesian_product l)
+
+let sort_2_cartesian_product = List.sort ~compare:(Tuple.T2.compare ~cmp1:Int.compare ~cmp2:Int.compare)
+let comp_cartesian_product_up_to l1 l2 =
+  (sort_2_cartesian_product l1) = (sort_2_cartesian_product l2)
+let show_cartesian_product_up_to l =
+  [%show: (int * int) list] (sort_2_cartesian_product l)
 
 let suite = "suite" >::: [
 
@@ -34,6 +38,23 @@ let suite = "suite" >::: [
           ~printer:show_n_cartesian_product
           [[1;2;3]; [1;2;4]; [1;5;3]; [1;5;4];] (n_cartesian_product [[1];[2;5];[3;4]])
       );
+
+    (* cartesian_product_up_to *)
+
+    "Cartesian product from {0} and {0}">::(fun _ ->
+        assert_equal
+          ~cmp:comp_cartesian_product_up_to
+          ~printer:show_cartesian_product_up_to
+          [(0,0)] (cartesian_product_up_to 0 0)
+      );
+
+    "Cartesian product from {0,1,2,3} and {0,1}">::(fun _ ->
+        assert_equal
+          ~cmp:comp_cartesian_product_up_to
+          ~printer:show_cartesian_product_up_to
+           [(0,0);(0,1);(1,0);(1,1);(2,0);(2,1);(3,0);(3,1)] (cartesian_product_up_to 3 1)
+      );
+
   ]
 
 let () =

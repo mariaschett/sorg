@@ -36,9 +36,8 @@ let rec strip' rs r = function
 let strip r =
   let k = List.length (Ctxt.common_prefix r.lhs r.rhs) in
   let m = List.length (Ctxt.common_postfix r.lhs r.rhs) in
-  let idxs = Util.n_cartesian_product [(List.init (k+1) ~f:Fn.id);(List.init (m+1) ~f:Fn.id)] in
-  let idxs_pairs = List.map idxs ~f:(fun idx -> match idx with [i; j] -> (i,j) | _ -> failwith "strip_all" ) in
-  let sr = strip' [] r idxs_pairs in
+  let idxs = Util.cartesian_product_up_to k m in
+  let sr = strip' [] r idxs in
   let most_context r = not (List.exists sr ~f:(fun r' ->
       not ([%eq: Rule.t] r r') &&
       is_subrule r' r))
