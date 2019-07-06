@@ -68,26 +68,25 @@ let process_optimizations opts =
   List.fold opts ~init:(result, []) ~f:process_opt_with_timeout
 
 let print_dups dups =
-  Format.printf "\nThe following rules were generated more than once:\n";
+  Format.printf "\nThe following %i duplicate rules were generated:\n"
+    (Rewrite_system.size dups);
   Format.printf "%s" (Rewrite_system.show dups)
 
 let print_muls muls =
   let print_mul (opt, rs) =
-    Format.printf "@[<v 2>%s@," (show_optimization opt);
-    List.iter rs ~f:(fun r -> Format.printf "%s@," (Rule.show r));
+    Format.printf "@[%s@\n" (show_optimization opt);
+    List.iter rs ~f:(fun r -> Format.printf "  %s@\n" (Rule.show r));
     Format.printf "@]"
   in
-  Format.printf "\nThe following optimizations generated multiple rules:";
+  Format.printf "\nThe following %i optimizations generated multiple rules:"
+    (List.length muls);
   List.iter muls ~f:print_mul
 
 let print_timeouts timeouts =
-  let print_opt opt =
-    Format.printf "%s@," (show_optimization opt)
-  in
-  Format.printf "\nThe following optimizations timed out:";
-  Format.printf "@[<v>";
-  List.iter timeouts ~f:print_opt;
-  Format.printf "@]"
+  let print_opt opt = Format.printf "%s@\n" (show_optimization opt) in
+  Format.printf "\nThe following %i optimizations timed out:"
+    (List.length timeouts);
+  Format.printf "@["; List.iter timeouts ~f:print_opt; Format.printf "@]"
 
 let result_to_csv result =
   let rule_to_row r =
