@@ -137,7 +137,7 @@ let () =
       and opt = anon (maybe (t2 ("LHS" %: string) ("RHS" %: string)))
       in
       fun () ->
-        Generate.timeout := (Option.value ~default:0 timeout) * 1000;
+        Program_schema.timeout := (Option.value ~default:0 timeout) * 1000;
         let opts = get_opts in_csv opt in
         Evmenc.set_wsz 256;
         let (result, timeouts) = process_optimizations opts in

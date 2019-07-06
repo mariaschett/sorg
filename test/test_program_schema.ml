@@ -20,6 +20,62 @@ let suite = "suite" >::: [
         assert_equal true (alpha_equal l1 l2)
       );
 
+    (* equiv *)
+
+    "Two equal constant terms are equvivalent">::(fun _ ->
+        let s = [DUP I] and t = [DUP I]
+        in
+        assert_bool "" (equiv s t)
+      );
+
+    "Remove superflous suffix" >::(fun _ ->
+        let s = [CALLVALUE; DUP I; ISZERO] in
+        let t = [CALLVALUE; CALLVALUE; ISZERO]
+        in
+        assert_bool "" (equiv s t)
+      );
+
+    "Generalize PUSH argument" >::(fun _ ->
+        let s = [PUSH (Val "2"); DUP II; SWAP I] and t = [DUP I; PUSH (Val "2")] in
+        assert_bool "" (equiv s t)
+      );
+
+    "Remove superflous prefix, abstract PUSH argument" >::(fun _ ->
+        let s = [POP; PUSH (Val "3"); SWAP I; POP] in
+        let t = [POP; POP; PUSH (Val "3")] in
+        assert_bool "" (equiv s t)
+      );
+
+    "Generalize PUSH args, two rules" >::(fun _ ->
+        let s = [PUSH (Val "0"); PUSH (Val "0"); ADD] in
+        let t = [PUSH (Val "0")] in
+        assert_bool "" (equiv s t)
+      );
+
+    "Advanced constant folding">::(fun _ ->
+        let s = [PUSH (Val "1"); PUSH (Val "2"); DUP II; OR] in
+        let t = [PUSH (Val "1"); PUSH (Val "3")] in
+        assert_bool "" (equiv s t)
+      );
+
+    "ADD commutative, combines [..]" >::(fun _ ->
+        let s = [POP; PUSH (Val "3"); DUP II; ADD; SWAP I; POP; PUSH (Val "2")] in
+        let t = [POP; PUSH (Val "3"); ADD; PUSH (Val "2")] in
+        assert_bool "" (equiv s t)
+      );
+
+    "Generalize PUSH args with constants" >::(fun _ ->
+        let s = [PUSH (Val "0"); PUSH (Const "w"); ADD] in
+        let t = [PUSH (Const "w")] in
+        assert_bool "" (equiv s t)
+      );
+
+    "Generalize PUSH args with different constants" >::(fun _ ->
+        let s = [PUSH (Val "0"); PUSH (Const "w1"); ADD] in
+        let t = [PUSH (Const "w2")] in
+        assert_bool "" (not (equiv s t))
+      );
+
     (* instruction_schema *)
 
     "Non-PUSH is a schema">::(fun _ ->
