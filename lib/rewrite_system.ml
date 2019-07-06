@@ -44,7 +44,7 @@ let pp_tpdb fmt ?(var="P") rs =
   Format.fprintf fmt "@[<v>(VAR@[<hov>@ %s" var;
   List.iter (vars rs) ~f:(fun v -> Format.fprintf fmt "@ %s" v);
   Format.fprintf fmt "@])@,(RULES@,@[<v>";
-  List.iter rs ~f:(fun r -> Format.fprintf fmt "  %a@," (Rule.pp_tpdb ~var:var) r);
+  List.iter rs ~f:(Format.fprintf fmt "  %a@," (Rule.pp_tpdb ~var:var));
   Format.fprintf fmt "@])@]"
 
 let show_tpdb ?(var="P") rs =
