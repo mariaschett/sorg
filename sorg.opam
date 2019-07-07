@@ -1,0 +1,25 @@
+opam-version: "2.0"
+name: "sorg"
+version: "1.0"
+synopsis: "Super Optimization based Rule Generator"
+maintainer: [ "mail@maria-a-schett.net" "mail@jnagele.net" ]
+authors: [ "mail@maria-a-schett.net" "mail@jnagele.net" ]
+license: "Apache-2.0"
+homepage: "https://github.com/mariaschett/sorg"
+dev-repo: "git+https://github.com:mariaschett/sorg.git"
+bug-reports: "https://github.com/mariaschett/sorg/issues"
+depends: [
+  "ocaml"
+  "dune"
+  "core"
+  "ebso" {= "2.0"}
+  "csv"
+  "ounit" {with-test}
+  "ppx_jane"
+  "ppx_deriving"
+]
+build: [
+  [ "dune" "subst" ] {pinned}
+  [ "dune" "build" "-p" name "-j" jobs ]
+]
+run-test: [make "test"]
