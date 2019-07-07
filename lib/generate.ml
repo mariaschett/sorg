@@ -22,16 +22,19 @@ let generalize r =
 
 let rec strip' rs r = function
   | [] -> rs
-  | (i,j) :: idx ->
-    let l' = Ctxt.strip_ctxt i j r.lhs and r' = Ctxt.strip_ctxt i j r.rhs in
-    if Program_schema.equiv l' r'
-    then
-      let rs' = {lhs = l'; rhs = r'} :: rs in
-      let idx' = List.filter idx ~f:(fun (i',j') -> not (i' < i && j' < j)) in
-      strip' rs' r idx'
+  | (i, j) :: idx ->
+    if i + j > List.length r.lhs || i + j > List.length r.rhs then
+      strip' rs r idx
     else
-      let idx' = List.filter idx ~f:(fun (i',j') -> not (i' > i && j' > j) ) in
-      strip' rs r idx'
+      let l' = Ctxt.strip_ctxt i j r.lhs and r' = Ctxt.strip_ctxt i j r.rhs in
+      if Program_schema.equiv l' r'
+      then
+        let rs' = {lhs = l'; rhs = r'} :: rs in
+        let idx' = List.filter idx ~f:(fun (i',j') -> not (i' < i && j' < j)) in
+        strip' rs' r idx'
+      else
+        let idx' = List.filter idx ~f:(fun (i',j') -> not (i' > i && j' > j) ) in
+        strip' rs r idx'
 
 let strip r =
   let k = List.length (Ctxt.common_prefix r.lhs r.rhs) in

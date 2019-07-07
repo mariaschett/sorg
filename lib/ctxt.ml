@@ -31,10 +31,7 @@ let rec all_ctxts s t = match (s, t) with
   | [], _  -> [([], t); (t, [])]
   | _, []  -> []
 
-let strip_ctxt i j t =
-  if i + j <= List.length t
-  then List.sub ~pos:i ~len:(List.length t - i - j) t
-  else raise Not_enough_context
+let strip_ctxt i j t = List.sub ~pos:i ~len:(List.length t - i - j) t
 
 let rec common_prefix ss ts = match ss, ts with
   | s :: ss', t :: ts' when s = t -> s :: (common_prefix ss' ts')

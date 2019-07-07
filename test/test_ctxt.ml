@@ -177,11 +177,6 @@ let suite = "suite" >::: [
           [POP] (strip_ctxt 1 1 t)
       );
 
-    "Remove too much of pre- and postfix">::(fun _ ->
-        let t = [POP; POP; POP] in
-        assert_raises Not_enough_context (fun () -> strip_ctxt 2 2 t)
-      );
-
     (* common_prefix *)
 
     "No common prefix">::(fun _ ->
