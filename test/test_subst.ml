@@ -15,12 +15,15 @@
 open Core
 open OUnit2
 open Ebso
-open Stackarg
+open Pusharg
 open Instruction
 open Subst
 
-let x = "x" and y = "y" and z = "z"
-let x_v = Const x and y_v = Const y and z_v = Const z
+let x = "x" and y = "y" and z = "z" and v = "v"
+let x_v = Word (Const x) and y_v = Word (Const y) and z_v = Word (Const z) and v_v = Word (Const v)
+let wzero = Word (Val "0")
+let wone = Word (Val "1")
+let wtwo = Word (Val "2")
 
 let comp_vvars vs vs' =
   let sort = List.sort ~compare:compare_vvar in
@@ -41,7 +44,7 @@ let suite = "suite" >::: [
     "Domain of substitution">::(fun _ ->
         assert_equal
           ~cmp:comp_vvars ~printer:show_vvars
-          [x; y] (dom [(x, Val "0"); (y, Val "0")])
+          [x; y] (dom [(x, wzero); (y, wzero)])
       );
 
     (* in_dom *)
@@ -77,7 +80,7 @@ let suite = "suite" >::: [
     "Extend substitution">::(fun _ ->
         assert_equal
           ~cmp:[%eq: Subst.t] ~printer:[%show: Subst.t]
-          [(x, y_v); (z, Const "v")] (extend_maps_to x y_v [(z, Const "v")])
+          [(x, y_v); (z, v_v)] (extend_maps_to x y_v [(z, v_v)])
       );
 
     "Element is mapped in extended substitution">::(fun _ ->
@@ -92,22 +95,22 @@ let suite = "suite" >::: [
         let s = [(x, y_v)] in
         assert_equal
           ~cmp:[%eq: Subst.t option] ~printer:[%show: Subst.t option]
-          (Some s) (match_instruction (Some s) (PUSH (Const x)) (PUSH y_v))
+          (Some s) (match_instruction (Some s) (PUSH x_v) (PUSH y_v))
       );
 
     "Match instruction where unrelated mapping exists">::(fun _ ->
         let s = [(x, y_v)] in
-        let s' = extend_maps_to z (Const "v") s in
+        let s' = extend_maps_to z v_v s in
         assert_equal
           ~cmp:[%eq: Subst.t option] ~printer:[%show: Subst.t option]
-          (Some s') (match_instruction (Some s) (PUSH (Const z)) (PUSH (Const "v")))
+          (Some s') (match_instruction (Some s) (PUSH z_v) (PUSH v_v))
       );
 
     "Fail when different mapping is inserted">::(fun _ ->
         let s = [(x, y_v)] in
         assert_equal
           ~cmp:[%eq: Subst.t option] ~printer:[%show: Subst.t option]
-          None (match_instruction (Some s) (PUSH (Const x)) (PUSH (Const "v")))
+          None (match_instruction (Some s) (PUSH x_v) (PUSH v_v))
       );
 
     "Fail when two different instructions are at same position">::(fun _ ->
@@ -160,70 +163,70 @@ let suite = "suite" >::: [
 
     "Map PUSH argument to value">::(fun _ ->
         let l1 = [PUSH x_v] in
-        let l2 = [PUSH (Val "0")] in
+        let l2 = [PUSH wzero] in
         assert_equal
           ~cmp:[%eq: Subst.t option] ~printer:[%show: Subst.t option]
-          (Some [(x, Val "0")]) (match_opt l1 l2)
+          (Some [(x, wzero)]) (match_opt l1 l2)
       );
 
     (* maps_to_val *)
 
     "Variable maps to value">::(fun _ ->
-        let s = [("x", Val "0")] in
-        assert_equal true (maps_to_val "x" (Val "0") s)
+        let s = [("x", wzero)] in
+        assert_equal true (maps_to_val "x" wzero s)
       );
 
     "Variable does not map to value">::(fun _ ->
-        let s = [("x", Val "0")] in
-        assert_equal false (maps_to_val "x" (Val "1") s)
+        let s = [("x", wzero)] in
+        assert_equal false (maps_to_val "x" wone s)
       );
 
     "Variable is not in domain of substitution">::(fun _ ->
-        let s = [("x", Val "0")] in
-        assert_equal false (maps_to_val "y" (Val "0") s)
+        let s = [("x", wzero)] in
+        assert_equal false (maps_to_val "y" wzero s)
       );
 
     (* preimages_of_val *)
 
     "No variable maps to value">::(fun _ ->
-        let s = [("x", Val "0"); ("y", Val "1")] in
+        let s = [("x", wzero); ("y", wone)] in
         assert_equal
           ~cmp:[%eq: vvar list] ~printer:[%show: vvar list]
-          [] (preimages_of_val (Val "2") s)
+          [] (preimages_of_val wtwo s)
       );
 
     "Only one variable maps to value">::(fun _ ->
-        let s = [("x", Val "0"); ("y", Val "1")] in
+        let s = [("x", wzero); ("y", wone)] in
         assert_equal
           ~cmp:[%eq: vvar list] ~printer:[%show: vvar list]
-          ["y"] (preimages_of_val (Val "1") s)
+          ["y"] (preimages_of_val wone s)
       );
 
     "Two variables map to same">::(fun _ ->
-        let s = [("x", Val "0"); ("y", Val "0")] in
+        let s = [("x", wzero); ("y", wzero)] in
         assert_equal
           ~cmp:(fun xs ys -> [%eq: vvar list]
                    (List.sort ~compare:compare_vvar xs)
                    (List.sort ~compare:compare_vvar ys))
           ~printer:[%show: vvar list]
-          ["x"; "y"] (preimages_of_val (Val "0") s)
+          ["x"; "y"] (preimages_of_val wzero s)
       );
 
     "Two variables map to same, one different">::(fun _ ->
-        let s = [("x", Val "0"); ("y", Val "0"); ("z", Val "1");] in
+        let s = [("x", wzero); ("y", wzero); ("z", wone);] in
         assert_equal
           ~cmp:(fun xs ys -> [%eq: vvar list]
                    (List.sort ~compare:compare_vvar xs)
                    (List.sort ~compare:compare_vvar ys))
           ~printer:[%show: vvar list]
-          ["x"; "y"] (preimages_of_val (Val "0") s)
+          ["x"; "y"] (preimages_of_val wzero s)
       );
 
     (* apply *)
 
     "Apply empty substitiution">::(fun _ ->
         let s = [] in
-        let p = [PUSH (Const "x")] in
+        let p = [PUSH x_v] in
         assert_equal
           ~cmp:[%eq: Program_schema.t]
           ~printer:[%show: Program_schema.t]
@@ -231,17 +234,17 @@ let suite = "suite" >::: [
       );
 
     "Apply substitiution on variable in program">::(fun _ ->
-        let s = [("x", Val "0")] in
-        let p = [PUSH (Const "x")] in
+        let s = [("x", wzero)] in
+        let p = [PUSH x_v] in
         assert_equal
           ~cmp:[%eq: Program_schema.t]
           ~printer:[%show: Program_schema.t]
-          [PUSH (Val "0")] (apply p s)
+          [PUSH wzero] (apply p s)
       );
 
     "Apply substitiution where variable is not in program">::(fun _ ->
-        let s = [("y", Val "0")] in
-        let p = [PUSH (Const "x")] in
+        let s = [("y", wzero)] in
+        let p = [PUSH x_v] in
         assert_equal
           ~cmp:[%eq: Program_schema.t]
           ~printer:[%show: Program_schema.t]
@@ -249,7 +252,7 @@ let suite = "suite" >::: [
       );
 
     "Apply substitiution on program without PUSH">::(fun _ ->
-        let s = [("x", Val "0")] in
+        let s = [("x", wzero)] in
         let p = [ADD] in
         assert_equal
           ~cmp:[%eq: Program_schema.t]
@@ -258,60 +261,60 @@ let suite = "suite" >::: [
       );
 
     "Apply substitiution twice">::(fun _ ->
-        let s = [("x", Val "0")] in
-        let p = [PUSH (Const "x"); PUSH (Const "x")] in
+        let s = [("x", wzero)] in
+        let p = [PUSH x_v; PUSH x_v] in
         assert_equal
           ~cmp:[%eq: Program_schema.t]
           ~printer:[%show: Program_schema.t]
-          [PUSH (Val "0"); PUSH (Val "0")] (apply p s)
+          [PUSH wzero; PUSH wzero] (apply p s)
       );
 
     (* is_instance *)
 
     "ADD is not an instance of PUSH x">::(fun _ ->
-        assert_equal false (is_instance [ADD] [PUSH (Const "x")])
+        assert_equal false (is_instance [ADD] [PUSH x_v])
       );
 
     "PUSH 0 is an instance of PUSH x">::(fun _ ->
-        assert_equal true (is_instance [PUSH (Val "0")] [PUSH (Const "x")])
+        assert_equal true (is_instance [PUSH wzero] [PUSH x_v])
       );
 
     "PUSH x is not an instance of PUSH 0">::(fun _ ->
-        assert_equal false (is_instance [PUSH (Const "x")] [PUSH (Val "0")])
+        assert_equal false (is_instance [PUSH x_v] [PUSH wzero])
       );
 
     "[PUSH 0; PUSH 0] is an instance of [PUSH x; PUSH y]">::(fun _ ->
         assert_equal true (is_instance
-                             [PUSH (Val "0"); PUSH (Val "0")]
-                             [PUSH (Const "x"); PUSH (Const "y")]
+                             [PUSH wzero; PUSH wzero]
+                             [PUSH x_v; PUSH y_v]
                           )
       );
 
     "[PUSH 1; PUSH 0] is an not instance of [PUSH x; PUSH x]">::(fun _ ->
         assert_equal false (is_instance
-                              [PUSH (Val "1"); PUSH (Val "0")]
-                              [PUSH (Const "x"); PUSH (Const "x")]
+                              [PUSH wone; PUSH wzero]
+                              [PUSH x_v; PUSH x_v]
                            )
       );
 
     "[PUSH x; PUSH y] is an not instance of [PUSH x; PUSH x]">::(fun _ ->
         assert_equal false (is_instance
-                              [PUSH (Const "x"); PUSH (Const "y")]
-                              [PUSH (Const "x"); PUSH (Const "x")]
+                              [PUSH x_v; PUSH y_v]
+                              [PUSH x_v; PUSH x_v]
                            )
       );
 
     "[PUSH y; PUSH x] is an not instance of [PUSH x; PUSH x]">::(fun _ ->
         assert_equal false (is_instance
-                              [PUSH (Const "y"); PUSH (Const "x")]
-                              [PUSH (Const "x"); PUSH (Const "x")]
+                              [PUSH y_v; PUSH x_v]
+                              [PUSH x_v; PUSH x_v]
                            )
       );
 
     (* same_image_larger *)
 
     "Make same_image_larger for x" >::(fun _ ->
-        let s = [("x",Val "0"); ("y",Val "0"); ("z",Val "0")] in
+        let s = [("x",wzero); ("y",wzero); ("z",wzero)] in
         assert_equal
           ~cmp:[%eq: vvar list]
           ~printer:[%show: vvar list]
@@ -319,7 +322,7 @@ let suite = "suite" >::: [
       );
 
     "Make same_image_larger for y" >::(fun _ ->
-        let s = [("x",Val "0"); ("y",Val "0"); ("z",Val "0")] in
+        let s = [("x",wzero); ("y",wzero); ("z",wzero)] in
         assert_equal
           ~cmp:[%eq: vvar list]
           ~printer:[%show: vvar list]
@@ -327,7 +330,7 @@ let suite = "suite" >::: [
       );
 
     "Make same_image_larger for z" >::(fun _ ->
-        let s = [("x",Val "0"); ("y",Val "0"); ("z",Val "0")] in
+        let s = [("x",wzero); ("y",wzero); ("z",wzero)] in
         assert_equal
           ~cmp:[%eq: vvar list]
           ~printer:[%show: vvar list]
@@ -337,58 +340,58 @@ let suite = "suite" >::: [
     (* binding_alts *)
 
     "Binding alternatives for single binding">::(fun _ ->
-        let s = [("x", Val "0")] in
+        let s = [("x", wzero)] in
         assert_equal
           ~cmp:[%eq: Subst.t]
           ~printer:[%show: Subst.t]
-          [("x", Val "0"); ("x", Const "x")] (binding_alts "x" s)
+          [("x", wzero); ("x", x_v)] (binding_alts "x" s)
       );
 
     "Binding alternatives for two variables mapping to different">::(fun _ ->
-        let s = [("x", Val "0"); ("y", Val "1")] in
+        let s = [("x", wzero); ("y", wone)] in
         assert_equal
           ~cmp:[%eq: Subst.t]
           ~printer:[%show: Subst.t]
-          [("x", Val "0"); ("x", Const "x")] (binding_alts "x" s)
+          [("x", wzero); ("x", x_v)] (binding_alts "x" s)
       );
 
     "Binding alternatives for two variables mapping to same for larger variable">::(fun _ ->
-        let s = [("x", Val "0"); ("y", Val "0")] in
+        let s = [("x", wzero); ("y", wzero)] in
         assert_equal
           ~cmp:[%eq: Subst.t]
           ~printer:[%show: Subst.t]
-          [("x", Val "0"); ("x", Const "x"); ("x", Const "y")] (binding_alts "x" s)
+          [("x", wzero); ("x", x_v); ("x", y_v)] (binding_alts "x" s)
       );
 
     "Binding alternatives for two variables mapping to same for smaller variable">::(fun _ ->
-        let s = [("x", Val "0"); ("y", Val "0")] in
+        let s = [("x", wzero); ("y", wzero)] in
         assert_equal
           ~cmp:[%eq: Subst.t]
           ~printer:[%show: Subst.t]
-          [("y", Val "0"); ("y", Const "y")] (binding_alts "y" s)
+          [("y", wzero); ("y", y_v)] (binding_alts "y" s)
       );
 
     (* all_binding_alts *)
 
     "All binding alternatives contain subst for largest x">::(fun _ ->
-        let s = [("x", Val "0"); ("y", Val "0"); ("z", Val "1");] in
-        let x_alt = [("x", Val "0"); ("x", Const "x"); ("x", Const "y")] in
+        let s = [("x", wzero); ("y", wzero); ("z", wone);] in
+        let x_alt = [("x", wzero); ("x", x_v); ("x", y_v)] in
         assert_equal
           true
           (List.mem (all_binding_alts s) x_alt ~equal:[%eq: Subst.t])
       );
 
     "All binding alternatives contain subst for smaller y">::(fun _ ->
-        let s = [("x", Val "0"); ("y", Val "0"); ("z", Val "1");] in
-        let y_alt = [("y", Val "0"); ("y", Const "y")] in
+        let s = [("x", wzero); ("y", wzero); ("z", wone);] in
+        let y_alt = [("y", wzero); ("y", y_v)] in
         assert_equal
           true
           (List.mem (all_binding_alts s) y_alt ~equal:[%eq: Subst.t])
       );
 
     "All binding alternatives contain subst for different z">::(fun _ ->
-        let s = [("x", Val "0"); ("y", Val "0"); ("z", Val "1");] in
-        let z_alt = [("z", Val "1"); ("z", Const "z")] in
+        let s = [("x", wzero); ("y", wzero); ("z", wone);] in
+        let z_alt = [("z", wone); ("z", z_v)] in
         assert_equal
           true
           (List.mem (all_binding_alts s) z_alt ~equal:[%eq: Subst.t])
@@ -397,83 +400,83 @@ let suite = "suite" >::: [
     (* more_general *)
 
     "A variable is mapped to a constant">::(fun _ ->
-        let s1 = [("x", Const "x")] in
-        let s2 = [("x", Val "0")] in
-        assert_equal true (more_general_subst [PUSH (Const "x")] s1 s2)
+        let s1 = [("x", x_v)] in
+        let s2 = [("x", wzero)] in
+        assert_equal true (more_general_subst [PUSH x_v] s1 s2)
       );
 
     "A variable mapped to the same is mapped to different constants">::(fun _ ->
-        let s1 = [("x", Const "x"); ("y", Const "x")] in
-        let s2 = [("x", Val "0"); ("y", Val "1")] in
-        assert_equal false (more_general_subst [PUSH (Const "x"); PUSH (Const "y")] s1 s2)
+        let s1 = [("x", x_v); ("y", x_v)] in
+        let s2 = [("x", wzero); ("y", wone)] in
+        assert_equal false (more_general_subst [PUSH x_v; PUSH y_v] s1 s2)
       );
 
     "Two substitutions are incomparable">::(fun _ ->
-        let s1 = [("x", Const "x"); ("y", Val "0")] in
-        let s2 = [("x", Val "0"); ("y", Const "y")] in
-        assert_equal false (more_general_subst [PUSH (Const "x"); PUSH (Const "y")] s1 s2)
+        let s1 = [("x", x_v); ("y", wzero)] in
+        let s2 = [("x", wzero); ("y", y_v)] in
+        assert_equal false (more_general_subst [PUSH x_v; PUSH y_v] s1 s2)
       );
 
     "More general is reflexive">::(fun _ ->
-        let s1 = [("x", Const "x")] in
-        assert_equal true (more_general_subst [PUSH (Const "x")] s1 s1)
+        let s1 = [("x", x_v)] in
+        assert_equal true (more_general_subst [PUSH x_v] s1 s1)
       );
 
     "Different variables are mapped to the same">::(fun _ ->
-        let s1 = [("x", Const "x"); ("y", Const "y")] in
-        let s2 = [("x", Const "x"); ("y", Const "x")] in
-        assert_equal true (more_general_subst [PUSH (Const "x"); PUSH (Const "y")] s1 s2)
+        let s1 = [("x", x_v); ("y", y_v)] in
+        let s2 = [("x", x_v); ("y", x_v)] in
+        assert_equal true (more_general_subst [PUSH x_v; PUSH y_v] s1 s2)
       );
 
     "Same variables are mapped to a different variable">::(fun _ ->
-        let s1 = [("x", Const "x"); ("y", Const "x")] in
-        let s2 = [("x", Const "x"); ("y", Const "y")] in
-        assert_equal false (more_general_subst [PUSH (Const "x"); PUSH (Const "y")] s1 s2)
+        let s1 = [("x", x_v); ("y", x_v)] in
+        let s2 = [("x", x_v); ("y", y_v)] in
+        assert_equal false (more_general_subst [PUSH x_v; PUSH y_v] s1 s2)
       );
 
     (* less_general_subst *)
 
     "A variable is mapped to a constant">::(fun _ ->
-        let s1 = [("x", Const "x")] in
-        let s2 = [("x", Val "0")] in
-        assert_equal false (less_general_subst [PUSH (Const "x")] s1 s2)
+        let s1 = [("x", x_v)] in
+        let s2 = [("x", wzero)] in
+        assert_equal false (less_general_subst [PUSH x_v] s1 s2)
       );
 
     "A variable mapped to the same is mapped to different constants">::(fun _ ->
-        let s1 = [("x", Const "x"); ("y", Const "x")] in
-        let s2 = [("x", Val "0"); ("y", Val "1")] in
-        assert_equal false (less_general_subst [PUSH (Const "x"); PUSH (Const "y")] s1 s2)
+        let s1 = [("x", x_v); ("y", x_v)] in
+        let s2 = [("x", wzero); ("y", wone)] in
+        assert_equal false (less_general_subst [PUSH x_v; PUSH y_v] s1 s2)
       );
 
     "Two substitutions are incomparable">::(fun _ ->
-        let s1 = [("x", Const "x"); ("y", Val "0")] in
-        let s2 = [("x", Val "0"); ("y", Const "y")] in
-        assert_equal false (less_general_subst [PUSH (Const "x"); PUSH (Const "y")] s1 s2)
+        let s1 = [("x", x_v); ("y", wzero)] in
+        let s2 = [("x", wzero); ("y", y_v)] in
+        assert_equal false (less_general_subst [PUSH x_v; PUSH y_v] s1 s2)
       );
 
     "More general is reflexive">::(fun _ ->
-        let s1 = [("x", Const "x")] in
-        assert_equal true (less_general_subst [PUSH (Const "x")] s1 s1)
+        let s1 = [("x", x_v)] in
+        assert_equal true (less_general_subst [PUSH x_v] s1 s1)
       );
 
     "Different variables are mapped to the same">::(fun _ ->
-        let s1 = [("x", Const "x"); ("y", Const "y")] in
-        let s2 = [("x", Const "x"); ("y", Const "x")] in
-        assert_equal false (less_general_subst [PUSH (Const "x"); PUSH (Const "y")] s1 s2)
+        let s1 = [("x", x_v); ("y", y_v)] in
+        let s2 = [("x", x_v); ("y", x_v)] in
+        assert_equal false (less_general_subst [PUSH x_v; PUSH y_v] s1 s2)
       );
 
     "Same variables are mapped to a different variable">::(fun _ ->
-        let s1 = [("x", Const "x"); ("y", Const "x")] in
-        let s2 = [("x", Const "x"); ("y", Const "y")] in
-        assert_equal true (less_general_subst [PUSH (Const "x"); PUSH (Const "y")] s1 s2)
+        let s1 = [("x", x_v); ("y", x_v)] in
+        let s2 = [("x", x_v); ("y", y_v)] in
+        assert_equal true (less_general_subst [PUSH x_v; PUSH y_v] s1 s2)
       );
 
     (* rm_less_general *)
 
     "Do not remove incompatible">::(fun _ ->
-        let s1 = [("x", Val "0"); ("y", Const "y")] in
-        let s2 = [("x", Const "x"); ("y", Val "0")] in
-        let t = [PUSH (Const "x"); PUSH (Const "y")] in
+        let s1 = [("x", wzero); ("y", y_v)] in
+        let s2 = [("x", x_v); ("y", wzero)] in
+        let t = [PUSH x_v; PUSH y_v] in
         assert_equal
           ~cmp:[%eq: Subst.t list]
           ~printer:[%show: Subst.t list]
@@ -481,9 +484,9 @@ let suite = "suite" >::: [
       );
 
     "Remove less general substition s2">::(fun _ ->
-        let s1 = [("x", Val "0"); ("y", Const "y")] in
-        let s2 = [("x", Val "0"); ("y", Val "0")] in
-        let t = [PUSH (Const "x"); PUSH (Const "y")] in
+        let s1 = [("x", wzero); ("y", y_v)] in
+        let s2 = [("x", wzero); ("y", wzero)] in
+        let t = [PUSH x_v; PUSH y_v] in
         assert_equal
           ~cmp:[%eq: Subst.t list]
           ~printer:[%show: Subst.t list]
@@ -491,9 +494,9 @@ let suite = "suite" >::: [
       );
 
     "Remove less general substition s2 mapping to same variable">::(fun _ ->
-        let s1 = [("x", Const "x"); ("y", Const "y")] in
-        let s2 = [("x", Const "x"); ("y", Const "x")] in
-        let t = [PUSH (Const "x"); PUSH (Const "y")] in
+        let s1 = [("x", x_v); ("y", y_v)] in
+        let s2 = [("x", x_v); ("y", x_v)] in
+        let t = [PUSH x_v; PUSH y_v] in
         assert_equal
           ~cmp:[%eq: Subst.t list]
           ~printer:[%show: Subst.t list]
@@ -501,9 +504,9 @@ let suite = "suite" >::: [
       );
 
     "Do not remove more general substition s2">::(fun _ ->
-        let s1 = [("x", Val "0"); ("y", Const "y")] in
-        let s2 = [("x", Const "x"); ("y", Const "x")] in
-        let t = [PUSH (Const "x"); PUSH (Const "y")] in
+        let s1 = [("x", wzero); ("y", y_v)] in
+        let s2 = [("x", x_v); ("y", x_v)] in
+        let t = [PUSH x_v; PUSH y_v] in
         assert_equal
           ~cmp:[%eq: Subst.t list]
           ~printer:[%show: Subst.t list]
@@ -513,9 +516,9 @@ let suite = "suite" >::: [
     (* rm_more_general *)
 
     "Do not remove incompatible">::(fun _ ->
-        let s1 = [("x", Val "0"); ("y", Const "y")] in
-        let s2 = [("x", Const "x"); ("y", Val "0")] in
-        let t = [PUSH (Const "x"); PUSH (Const "y")] in
+        let s1 = [("x", wzero); ("y", y_v)] in
+        let s2 = [("x", x_v); ("y", wzero)] in
+        let t = [PUSH x_v; PUSH y_v] in
         assert_equal
           ~cmp:[%eq: Subst.t list]
           ~printer:[%show: Subst.t list]
@@ -523,9 +526,9 @@ let suite = "suite" >::: [
       );
 
     "Remove more general substition s1">::(fun _ ->
-        let s1 = [("x", Val "0"); ("y", Const "y")] in
-        let s2 = [("x", Val "0"); ("y", Val "0")] in
-        let t = [PUSH (Const "x"); PUSH (Const "y")] in
+        let s1 = [("x", wzero); ("y", y_v)] in
+        let s2 = [("x", wzero); ("y", wzero)] in
+        let t = [PUSH x_v; PUSH y_v] in
         assert_equal
           ~cmp:[%eq: Subst.t list]
           ~printer:[%show: Subst.t list]
@@ -533,9 +536,9 @@ let suite = "suite" >::: [
       );
 
     "Remove more general substition s2 mapping to same variable">::(fun _ ->
-        let s1 = [("x", Const "x"); ("y", Const "y")] in
-        let s2 = [("x", Const "x"); ("y", Const "x")] in
-        let t = [PUSH (Const "x"); PUSH (Const "y")] in
+        let s1 = [("x", x_v); ("y", y_v)] in
+        let s2 = [("x", x_v); ("y", x_v)] in
+        let t = [PUSH x_v; PUSH y_v] in
         assert_equal
           ~cmp:[%eq: Subst.t list]
           ~printer:[%show: Subst.t list]
@@ -543,9 +546,9 @@ let suite = "suite" >::: [
       );
 
     "Do not remove less general substition s2 mapping to same variable">::(fun _ ->
-        let s1 = [("x", Const "x"); ("y", Const "y")] in
-        let s2 = [("x", Const "x"); ("y", Const "x")] in
-        let t = [PUSH (Const "y"); PUSH (Const "x")] in
+        let s1 = [("x", x_v); ("y", y_v)] in
+        let s2 = [("x", x_v); ("y", x_v)] in
+        let t = [PUSH y_v; PUSH x_v] in
         assert_equal
           ~cmp:[%eq: Subst.t list]
           ~printer:[%show: Subst.t list]
@@ -553,9 +556,9 @@ let suite = "suite" >::: [
       );
 
     "Do not remove less general substition s2">::(fun _ ->
-        let s1 = [("x", Val "0"); ("y", Const "y")] in
-        let s2 = [("x", Const "x"); ("y", Const "x")] in
-        let t = [PUSH (Const "x"); PUSH (Const "y")] in
+        let s1 = [("x", wzero); ("y", y_v)] in
+        let s2 = [("x", x_v); ("y", x_v)] in
+        let t = [PUSH x_v; PUSH y_v] in
         assert_equal
           ~cmp:[%eq: Subst.t list]
           ~printer:[%show: Subst.t list]

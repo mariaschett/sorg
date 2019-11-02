@@ -16,17 +16,25 @@ open Rule
 open Generate
 open Ebso
 open Instruction
+open Pusharg
 open OUnit2
+
+let wzero = Word (Val "0")
+let wone = Word (Val "1")
+let wtwo = Word (Val "2")
+let wthree = Word (Val "3")
+let wconstx = Word (Const "x")
+let wconstc = Word (Const "c")
 
 let suite = "suite" >::: [
 
     (* strip *)
 
     "Remove superflous prefix" >::(fun _ ->
-        let r = {lhs = [POP; PUSH (Val "0"); ADD]; rhs = [POP]}
+        let r = {lhs = [POP; PUSH wzero; ADD]; rhs = [POP]}
         in
         assert_equal ~cmp:[%eq: Rewrite_system.t] ~printer:[%show: Rewrite_system.t]
-          [{lhs = [PUSH (Val "0"); ADD]; rhs = []}] (strip r)
+          [{lhs = [PUSH wzero; ADD]; rhs = []}] (strip r)
       );
 
     "Removing prefix is not correct" >::(fun _ ->
@@ -37,14 +45,14 @@ let suite = "suite" >::: [
       );
 
     "Remove superflous suffix" >::(fun _ ->
-        let r = {lhs = [PUSH (Val "0"); ADD; POP]; rhs = [POP]}
+        let r = {lhs = [PUSH wzero; ADD; POP]; rhs = [POP]}
         in
         assert_equal ~cmp:[%eq: Rewrite_system.t] ~printer:[%show: Rewrite_system.t]
-          [{lhs = [PUSH (Val "0"); ADD]; rhs = []}] (strip r)
+          [{lhs = [PUSH wzero; ADD]; rhs = []}] (strip r)
       );
 
     "Removing suffix is not correct" >::(fun _ ->
-        let r = {lhs = [PUSH (Val "2"); POP]; rhs = [ADDRESS; POP]}
+        let r = {lhs = [PUSH wtwo; POP]; rhs = [ADDRESS; POP]}
         in
         assert_equal ~cmp:[%eq: Rewrite_system.t] ~printer:[%show: Rewrite_system.t]
           [r] (strip r)
@@ -64,9 +72,9 @@ let suite = "suite" >::: [
       );
 
     "Generalize PUSH argument" >::(fun _ ->
-        let s = [PUSH (Val "2"); DUP II; SWAP I] and t = [DUP I; PUSH (Val "2")] in
-        let r = { lhs = [PUSH (Const "c"); DUP II; SWAP I];
-                  rhs = [DUP I; PUSH (Const "c")]}
+        let s = [PUSH wtwo; DUP II; SWAP I] and t = [DUP I; PUSH wtwo] in
+        let r = { lhs = [PUSH wconstc; DUP II; SWAP I];
+                  rhs = [DUP I; PUSH wconstc]}
         in
         assert_equal
           ~cmp:[%eq: Rule.t list]
@@ -75,10 +83,10 @@ let suite = "suite" >::: [
       );
 
     "Remove superflous prefix, abstract PUSH argument" >::(fun _ ->
-        let s = [POP; PUSH (Val "3"); SWAP I; POP] in
-        let t = [POP; POP; PUSH (Val "3")] in
-        let r = { lhs = [PUSH (Const "c"); SWAP I; POP];
-                  rhs = [POP; PUSH (Const "c")]}
+        let s = [POP; PUSH wthree; SWAP I; POP] in
+        let t = [POP; POP; PUSH wthree] in
+        let r = { lhs = [PUSH wconstc; SWAP I; POP];
+                  rhs = [POP; PUSH wconstc]}
         in
         assert_equal ~cmp:[%eq: Rule.t list]
           ~printer:[%show: Rule.t list]
@@ -86,11 +94,11 @@ let suite = "suite" >::: [
       );
 
     "Generalize PUSH args, two rules" >::(fun _ ->
-        let s = [PUSH (Val "0"); PUSH (Val "0"); ADD] in
-        let t = [PUSH (Val "0")] in
-        let r1 = { lhs = [PUSH (Val "0"); PUSH (Const "c"); ADD];
-                   rhs = [PUSH (Const "c")]} in
-        let r2 = { lhs = [PUSH (Val "0"); ADD];
+        let s = [PUSH wzero; PUSH wzero; ADD] in
+        let t = [PUSH wzero] in
+        let r1 = { lhs = [PUSH wzero; PUSH wconstc; ADD];
+                   rhs = [PUSH wconstc]} in
+        let r2 = { lhs = [PUSH wzero; ADD];
                    rhs = []}
         in
         assert_equal ~cmp:[%eq: Rewrite_system.t]
@@ -99,8 +107,8 @@ let suite = "suite" >::: [
       );
 
     "Advanced constant folding">::(fun _ ->
-        let s = [PUSH (Val "1"); PUSH (Val "2"); DUP II; OR] in
-        let t = [PUSH (Val "1"); PUSH (Val "3")]
+        let s = [PUSH wone; PUSH wtwo; DUP II; OR] in
+        let t = [PUSH wone; PUSH wthree]
         in
         assert_equal ~cmp:[%eq: Rewrite_system.t]
           ~printer:[%show: Rewrite_system.t]
@@ -108,8 +116,8 @@ let suite = "suite" >::: [
       );
 
     "ADD commutative, combines remove pre-/suffix and generate rules argument" >::(fun _ ->
-        let s = [POP; PUSH (Val "3"); SWAP I; ADD; PUSH (Val "2")] in
-        let t = [POP; PUSH (Val "3"); ADD; PUSH (Val "2")] in
+        let s = [POP; PUSH wthree; SWAP I; ADD; PUSH wtwo] in
+        let t = [POP; PUSH wthree; ADD; PUSH wtwo] in
         let r = { lhs = [SWAP I; ADD];
                   rhs = [ADD] }
         in
@@ -118,8 +126,8 @@ let suite = "suite" >::: [
       );
 
     "Mix ADD, DUP, and SWAP" >::(fun _ ->
-        let s = [POP; PUSH (Val "3"); DUP II; ADD; SWAP I; POP; PUSH (Val "2")] in
-        let t = [POP; PUSH (Val "3"); ADD; PUSH (Val "2")] in
+        let s = [POP; PUSH wthree; DUP II; ADD; SWAP I; POP; PUSH wtwo] in
+        let t = [POP; PUSH wthree; ADD; PUSH wtwo] in
         let r = { lhs = [DUP II; ADD; SWAP I; POP];
                   rhs = [ADD] }
         in
@@ -139,17 +147,17 @@ let suite = "suite" >::: [
     (* generalize *)
 
     "Find the two generalizations from PUSH 0 PUSH 0 ADD to PUSH 0">:: (fun _ ->
-        let r = {lhs = [PUSH (Val "0"); PUSH (Val "0"); ADD]; rhs = [PUSH (Val "0")]} in
+        let r = {lhs = [PUSH wzero; PUSH wzero; ADD]; rhs = [PUSH wzero]} in
         assert_equal
           ~cmp:[%eq: Rewrite_system.t] ~printer:[%show: Rewrite_system.t]
-          [ {lhs = [PUSH (Val "0"); PUSH (Const "x"); ADD]; rhs = [PUSH (Const "x")]}
-          ; {lhs = [PUSH (Const "x"); PUSH (Val "0"); ADD]; rhs = [PUSH (Const "x")]}
+          [ {lhs = [PUSH wzero; PUSH wconstx; ADD]; rhs = [PUSH wconstx]}
+          ; {lhs = [PUSH wconstx; PUSH wzero; ADD]; rhs = [PUSH wconstx]}
           ]
           (generalize r)
       );
 
     "No generalization possible">::(fun _ ->
-        let s = [PUSH (Val "0"); ADD] and t = [] in
+        let s = [PUSH wzero; ADD] and t = [] in
         let r = {lhs = s; rhs = t}
         in
         assert_equal
@@ -158,27 +166,27 @@ let suite = "suite" >::: [
       );
 
     "Find generalization for one variable" >:: (fun _ ->
-        let r = {lhs = [PUSH (Val "0")]; rhs = [PUSH (Val "0")]} in
+        let r = {lhs = [PUSH wzero]; rhs = [PUSH wzero]} in
         let rs = generalize r in
         assert_equal
            ~cmp:[%eq: Rewrite_system.t] ~printer:[%show: Rewrite_system.t]
-          [{lhs = [PUSH (Const "x")]; rhs = [PUSH (Const "x")]}]
+          [{lhs = [PUSH wconstx]; rhs = [PUSH wconstx]}]
           rs
       );
 
     "Generalize program with stack-depth > 0" >:: (fun _ ->
-        let r = {lhs = [POP; PUSH (Val "3"); PUSH (Val "0"); ADD];
-                 rhs = [POP; PUSH (Val "3")]} in
+        let r = {lhs = [POP; PUSH wthree; PUSH wzero; ADD];
+                 rhs = [POP; PUSH wthree]} in
         assert_equal
           ~cmp:[%eq: Rewrite_system.t] ~printer:[%show: Rewrite_system.t]
-          [ {lhs = [POP; PUSH (Const "x"); PUSH (Val "0"); ADD] ;
-             rhs = [POP; PUSH (Const "x")]};]
+          [ {lhs = [POP; PUSH wconstx; PUSH wzero; ADD] ;
+             rhs = [POP; PUSH wconstx]};]
           (generalize r)
       );
 
     "Generalize incorrect optimization" >:: (fun _ ->
-        let r = {lhs = [DUP I; PUSH (Val "3"); EQ];
-                 rhs = [PUSH (Val "1")]} in
+        let r = {lhs = [DUP I; PUSH wthree; EQ];
+                 rhs = [PUSH wone]} in
         assert_equal
           ~cmp:[%eq: Rewrite_system.t] ~printer:[%show: Rewrite_system.t]
           []

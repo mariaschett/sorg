@@ -91,11 +91,13 @@ let print_timeouts timeouts =
 let result_to_csv result =
   let rule_to_row r =
     let open Rule in
+    let module GC = Gas_cost in
     let (s, t) = List.Assoc.find_exn result.origins ~equal:Rule.equal r in
+    let g = GC.to_int (Program.total_gas_cost r.lhs) - GC.to_int (Program.total_gas_cost r.rhs) in
     [ Program.show_h r.lhs
     ; Program.show_h r.rhs
     ; String.concat (vars r) ~sep:" "
-    ; [%show: int] (Program.total_gas_cost r.lhs - Program.total_gas_cost r.rhs)
+    ; [%show: int] g
     ; Program.show_h s
     ; Program.show_h t
     ; Rule.show_tpdb r
@@ -138,7 +140,7 @@ let () =
       fun () ->
         Program_schema.timeout := (Option.value ~default:0 timeout) * 1000;
         let opts = get_opts in_csv opt in
-        Evmenc.set_wsz 256;
+        Word.set_wsz 256;
         let (result, timeouts) = process_optimizations opts in
         if tpdb then
           Out_channel.printf "%s" (Rewrite_system.show_tpdb result.rules)

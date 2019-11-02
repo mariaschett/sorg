@@ -16,6 +16,7 @@ open OUnit2
 open Ebso
 open Ctxt
 open Instruction
+open Pusharg
 
 let comp_ctxts cs cs' =
   let sort = List.sort Ctxt.compare in
@@ -24,6 +25,9 @@ let comp_ctxts cs cs' =
 let show_ctxts cs =
   let sort = List.sort Ctxt.compare in
   [%show: Ctxt.t list] (sort cs)
+
+let x = "x" and y = "y" and z = "z"
+let x_v = Word (Const x) and y_v = Word (Const y) and z_v = Word (Const z)
 
 let suite = "suite" >::: [
 
@@ -139,8 +143,8 @@ let suite = "suite" >::: [
       );
 
     "Programs with different immediate arguments (although instances)" >:: (fun _ ->
-        let s = [PUSH (Const "x")] in
-        let t = [PUSH (Const "y")] in
+        let s = [PUSH x_v] in
+        let t = [PUSH y_v] in
         assert_equal
           ~cmp:comp_ctxts
           ~printer:show_ctxts
@@ -148,8 +152,8 @@ let suite = "suite" >::: [
       );
 
     "Programs with same immediate arguments" >:: (fun _ ->
-        let s = [PUSH (Const "x")] in
-        let t = [PUSH (Const "x")] in
+        let s = [PUSH x_v] in
+        let t = [PUSH x_v] in
         assert_equal
           ~cmp:comp_ctxts
           ~printer:show_ctxts
@@ -157,7 +161,7 @@ let suite = "suite" >::: [
       );
 
     "A different program has no context" >:: (fun _ ->
-        let s = [PUSH (Const "x")] in
+        let s = [PUSH x_v] in
         let t = [POP] in
         assert_equal
           ~cmp:comp_ctxts
@@ -224,7 +228,7 @@ let suite = "suite" >::: [
       );
 
     "No common prefix for PUSHs">::(fun _ ->
-        let s = [PUSH (Const "x")] and t = [PUSH (Const "y")] in
+        let s = [PUSH x_v] and t = [PUSH y_v] in
         assert_equal ~cmp:[%eq: Program_schema.t] ~printer:[%show: Program_schema.t]
           [] (common_prefix s t)
       );
@@ -232,7 +236,7 @@ let suite = "suite" >::: [
     (* common_postfix *)
 
     "No common postfix for PUSHs">::(fun _ ->
-        let s = [PUSH (Const "x")] and t = [PUSH (Const "y")] in
+        let s = [PUSH x_v] and t = [PUSH y_v] in
         assert_equal ~cmp:[%eq: Program_schema.t] ~printer:[%show: Program_schema.t]
           [] (common_postfix s t)
       );

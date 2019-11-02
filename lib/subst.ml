@@ -15,10 +15,10 @@
 open Core
 open Ebso
 open Instruction
-open Stackarg
+open Pusharg
 
-type vvar = constarg [@@deriving show { with_path = false }, sexp, compare, equal]
-type vval = Stackarg.t [@@deriving show { with_path = false }, sexp, compare, equal]
+type vvar = string [@@deriving show { with_path = false }, sexp, compare, equal]
+type vval = Pusharg.t [@@deriving show { with_path = false }, sexp, compare, equal]
 
 type ventr = (vvar * vval) [@@deriving show { with_path = false }, sexp, compare, equal]
 type t = ventr list [@@deriving show { with_path = false }, sexp, compare]
@@ -41,8 +41,8 @@ let preimages_of_val v s = List.filter (dom s) ~f:(fun x -> maps_to_val x v s)
 let extend_maps_to x v s = List.Assoc.add s x v ~equal:[%eq: vvar]
 
 let match_instruction s p1 p2 = match s, p1, p2 with
-  | Some s', PUSH (Const x), PUSH w when not (in_dom x s') -> Some (extend_maps_to x w s')
-  | Some s', PUSH (Const x), PUSH w -> if (maps_to_exn x s') = w then s else None
+  | Some s', PUSH (Word (Const x)), PUSH w when not (in_dom x s') -> Some (extend_maps_to x w s')
+  | Some s', PUSH (Word (Const x)), PUSH w -> if (maps_to_exn x s') = w then s else None
   | Some _, i1, i2 when i1 = i2 -> s
   | _ -> None
 
@@ -54,7 +54,7 @@ let match_opt p1 p2 =
 
 let apply p s =
   let apply_instruction = function
-    | PUSH (Const x) when in_dom x s -> PUSH (maps_to_exn x s)
+    | PUSH (Word (Const x)) when in_dom x s -> PUSH (maps_to_exn x s)
     | i -> i
   in
   List.map p ~f:(apply_instruction)
@@ -66,8 +66,8 @@ let same_image_larger x s =
   List.filter (preimages_of_val v s) ~f:(fun y -> x < y)
 
 let binding_alts x s =
-  [(x, Const x); (x, maps_to_exn x s)] @
-  List.map (same_image_larger x s) ~f:(fun y -> (x, Const y))
+  [(x, Word (Const x)); (x, maps_to_exn x s)] @
+  List.map (same_image_larger x s) ~f:(fun y -> (x, Word (Const y)))
 
 let all_binding_alts s = List.map (dom s) ~f:(fun x -> binding_alts x s)
 

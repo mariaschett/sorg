@@ -56,7 +56,7 @@ let insert_non_dup_rules rs' rs =
 
 let pp_tpdb fmt ?(var="P") rs =
   Format.fprintf fmt "@[<v>(VAR@[<hov>@ %s" var;
-  List.iter (vars rs) ~f:(fun v -> Format.fprintf fmt "@ %s" v);
+  List.iter (vars rs) ~f:(fun v -> Format.fprintf fmt "@ c%s" v);
   Format.fprintf fmt "@])@,(RULES@,@[<v>";
   List.iter rs ~f:(Format.fprintf fmt "  %a@," (Rule.pp_tpdb ~var:var));
   Format.fprintf fmt "@])@]"

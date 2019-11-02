@@ -28,7 +28,7 @@ let alpha_equal p1 p2 = match (match_opt p1 p2, match_opt p2 p1) with
 let compare s t =
   (* Ebso.Instruction ignores argument of PUSH for comparison *)
   let compare_instr i1 i2 = match (i1, i2) with
-    | PUSH x, PUSH y -> Stackarg.compare x y
+    | PUSH x, PUSH y -> Pusharg.compare x y
     | _, _ -> Instruction.compare i1 i2
   in
   List.compare compare_instr s t
@@ -48,7 +48,7 @@ let equiv =
 let vars = Program.consts
 
 let instruction_schema x = function
-  | PUSH (Val _) -> Some (PUSH (Const x))
+  | PUSH (Word (Val _)) -> Some (PUSH (Word (Const x)))
   | _ -> None
 
 let maximal_schema c_0 =
@@ -64,7 +64,7 @@ let maximal_schema c_0 =
 let pp_tpdb fmt ?(var="P") p =
   let len = List.length p in
   let rec pp fmt = function
-    | PUSH x :: is -> Format.fprintf fmt "%s%a%s%a" "PUSH(" Stackarg.pp x ", " pp is
+    | PUSH x :: is -> Format.fprintf fmt "%s%a%s%a" "PUSH(" Pusharg.pp x ", " pp is
     | i :: is -> Format.fprintf fmt "%a%s%a" Instruction.pp i "(" pp is
     | [] -> Format.fprintf fmt "%s%s" var (String.init len ~f:(fun _ -> ')'))
   in

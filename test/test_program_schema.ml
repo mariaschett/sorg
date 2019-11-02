@@ -16,21 +16,29 @@ open Core
 open OUnit2
 open Ebso
 open Instruction
+open Pusharg
 open Program_schema
+
+let x = "x" and y = "y" and z = "z"
+let x_v = Word (Const x) and y_v = Word (Const y) and z_v = Word (Const z)
+let wzero = Word (Val "0")
+let wone = Word (Val "1")
+let wtwo = Word (Val "2")
+let wthree = Word (Val "3")
 
 let suite = "suite" >::: [
 
     (* alpha_equal *)
 
     "Fail alpha equvivalence for two PUSH mapping arguments to same argument">::(fun _ ->
-        let l1 = [PUSH (Const "x"); PUSH (Const "y")] in
-        let l2 = [PUSH (Const "z"); PUSH (Const "z")] in
+        let l1 = [PUSH x_v; PUSH y_v] in
+        let l2 = [PUSH z_v; PUSH z_v] in
         assert_equal false (alpha_equal l1 l2)
       );
 
     "Succeed alpha equvivalence for two PUSH mapping arguments to different arguments">::(fun _ ->
-        let l1 = [PUSH (Const "x"); PUSH (Const "y")] in
-        let l2 = [PUSH (Const "y"); PUSH (Const "x")] in
+        let l1 = [PUSH x_v; PUSH y_v] in
+        let l2 = [PUSH y_v; PUSH x_v] in
         assert_equal true (alpha_equal l1 l2)
       );
 
@@ -50,43 +58,44 @@ let suite = "suite" >::: [
       );
 
     "Generalize PUSH argument" >::(fun _ ->
-        let s = [PUSH (Val "2"); DUP II; SWAP I] and t = [DUP I; PUSH (Val "2")] in
+        let s = [PUSH wtwo; DUP II; SWAP I] and t = [DUP I; PUSH wtwo] in
         assert_bool "" (equiv s t)
       );
 
     "Remove superflous prefix, abstract PUSH argument" >::(fun _ ->
-        let s = [POP; PUSH (Val "3"); SWAP I; POP] in
-        let t = [POP; POP; PUSH (Val "3")] in
+        let s = [POP; PUSH wthree; SWAP I; POP] in
+        let t = [POP; POP; PUSH wthree] in
         assert_bool "" (equiv s t)
       );
 
     "Generalize PUSH args, two rules" >::(fun _ ->
-        let s = [PUSH (Val "0"); PUSH (Val "0"); ADD] in
-        let t = [PUSH (Val "0")] in
+        let s = [PUSH wzero; PUSH wzero; ADD] in
+        let t = [PUSH wzero] in
         assert_bool "" (equiv s t)
       );
 
     "Advanced constant folding">::(fun _ ->
-        let s = [PUSH (Val "1"); PUSH (Val "2"); DUP II; OR] in
-        let t = [PUSH (Val "1"); PUSH (Val "3")] in
+        let s = [PUSH wone; PUSH wtwo; DUP II; OR] in
+        let t = [PUSH wone; PUSH wthree] in
         assert_bool "" (equiv s t)
       );
 
     "ADD commutative, combines [..]" >::(fun _ ->
-        let s = [POP; PUSH (Val "3"); DUP II; ADD; SWAP I; POP; PUSH (Val "2")] in
-        let t = [POP; PUSH (Val "3"); ADD; PUSH (Val "2")] in
+        let s = [POP; PUSH wthree; DUP II; ADD; SWAP I; POP; PUSH wtwo] in
+        let t = [POP; PUSH wthree; ADD; PUSH wtwo] in
         assert_bool "" (equiv s t)
       );
 
     "Generalize PUSH args with constants" >::(fun _ ->
-        let s = [PUSH (Val "0"); PUSH (Const "w"); ADD] in
-        let t = [PUSH (Const "w")] in
+        let w = Word (Const "w") in
+        let s = [PUSH wzero; PUSH w; ADD] in
+        let t = [PUSH w] in
         assert_bool "" (equiv s t)
       );
 
     "Generalize PUSH args with different constants" >::(fun _ ->
-        let s = [PUSH (Val "0"); PUSH (Const "w1"); ADD] in
-        let t = [PUSH (Const "w2")] in
+        let s = [PUSH wzero; PUSH (Word (Const "w1")); ADD] in
+        let t = [PUSH (Word (Const "w2"))] in
         assert_bool "" (not (equiv s t))
       );
 
@@ -100,17 +109,17 @@ let suite = "suite" >::: [
       );
 
     "PUSH (Const x) instruction is already a schema">::(fun _ ->
-        let i = PUSH (Const "x") and x = "x_0" in
+        let i = PUSH x_v and x = "x_0" in
         assert_equal
           ~cmp:[%eq: Instruction.t option] ~printer:[%show: Instruction.t option]
           None (instruction_schema x i)
       );
 
     "PUSH (Val 0) instruction needs to become a schema">::(fun _ ->
-        let i = PUSH (Val "0") and x = "x_0" in
+        let i = PUSH wzero and x = "x" in
         assert_equal
           ~cmp:[%eq: Instruction.t option] ~printer:[%show: Instruction.t option]
-          (Some (PUSH (Const x))) (instruction_schema x i)
+          (Some (PUSH x_v)) (instruction_schema x i)
       );
 
     (* maximal_schema *)
@@ -130,8 +139,9 @@ let suite = "suite" >::: [
       );
 
     "Compute a program schema with PUSH (Val n) and PUSH (Const c)">::(fun _ ->
-        let p = [PUSH (Val "1"); PUSH (Val "3"); PUSH (Const "c")] in
-        let p' = [PUSH (Const "x_1"); PUSH (Const "x_2"); PUSH (Const "c")] in
+        let c = Word (Const "c") in
+        let p = [PUSH wone; PUSH wthree; PUSH c] in
+        let p' = [PUSH (Word (Const "x_1")); PUSH (Word (Const "x_2")); PUSH c] in
         assert_equal
         ~cmp:(fun (i, p) (i', p') -> i = i' && alpha_equal p p')
         ~printer:[%show: int * Program_schema.t]
