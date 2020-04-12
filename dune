@@ -1,4 +1,5 @@
 (executable (name main)
   (libraries core ebso sorg csv)
   (preprocess (pps ppx_jane ppx_deriving.std))
+  (public_name sorg)
 )

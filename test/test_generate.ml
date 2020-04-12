@@ -12,6 +12,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 *)
+open Sorg
 open Rule
 open Generate
 open Ebso

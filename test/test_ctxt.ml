@@ -14,6 +14,7 @@
 *)
 open OUnit2
 open Ebso
+open Sorg
 open Ctxt
 open Instruction.T
 open Pusharg

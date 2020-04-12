@@ -14,6 +14,7 @@
 *)
 open Core
 open OUnit2
+open Sorg
 open Util
 
 let sort_n_cartesian_product = List.sort ~compare:(List.compare Int.compare)

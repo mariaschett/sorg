@@ -14,6 +14,7 @@
 *)
 open Core
 open OUnit2
+open Sorg
 open Rule
 open Ebso
 open Instruction.T

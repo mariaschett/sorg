@@ -1,5 +1,5 @@
 (library (name sorg)
- (wrapped false)
  (libraries core ebso)
- (preprocess (pps ppx_jane ppx_deriving.std))
+ (preprocess (pps ppx_jane ppx_deriving.std)) 
+ (public_name sorg)
 )

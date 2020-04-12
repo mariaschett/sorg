@@ -14,6 +14,7 @@
 *)
 open Core
 open OUnit2
+open Sorg
 open Ebso
 open Instruction.T
 open Pusharg
