@@ -14,7 +14,7 @@
 *)
 open Core
 open Ebso
-open Instruction
+open Instruction.T
 open Pusharg
 
 type vvar = string [@@deriving show { with_path = false }, sexp, compare, equal]

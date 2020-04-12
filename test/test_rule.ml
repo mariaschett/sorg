@@ -16,7 +16,7 @@ open Core
 open OUnit2
 open Rule
 open Ebso
-open Instruction
+open Instruction.T
 open Pusharg
 
 let x = "x" and y = "y" and z = "z"

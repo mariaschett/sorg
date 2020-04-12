@@ -14,7 +14,7 @@
 *)
 open Core
 open Ebso
-open Instruction
+open Instruction.T
 open Subst
 
 type t = Ebso.Program.t [@@deriving sexp, equal, show]
@@ -38,8 +38,8 @@ let pp = Program.pp_h
 let equiv =
   let is_translation_valid s t =
     (* candidate instruction set is irrelevant, hence [] *)
-    let ecs = Evmenc.mk_enc_consts s (`User []) in
-    let c = Evmenc.enc_trans_val ecs t in
+    let ecs = Enc_consts.mk s (`User []) in
+    let c = Superoptimization.enc_trans_val ecs t in
     match Z3util.solve_model_timeout [c] !timeout with
     | None -> true
     | Some _ -> false

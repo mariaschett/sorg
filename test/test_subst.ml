@@ -16,7 +16,7 @@ open Core
 open OUnit2
 open Ebso
 open Pusharg
-open Instruction
+open Instruction.T
 open Subst
 
 let x = "x" and y = "y" and z = "z" and v = "v"

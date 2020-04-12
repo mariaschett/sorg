@@ -15,7 +15,7 @@
 open Rule
 open Generate
 open Ebso
-open Instruction
+open Instruction.T
 open Pusharg
 open OUnit2
 

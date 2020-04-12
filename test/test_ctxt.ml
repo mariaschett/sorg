@@ -15,7 +15,7 @@
 open OUnit2
 open Ebso
 open Ctxt
-open Instruction
+open Instruction.T
 open Pusharg
 
 let comp_ctxts cs cs' =

@@ -15,7 +15,7 @@
 open Core
 open OUnit2
 open Ebso
-open Instruction
+open Instruction.T
 open Pusharg
 open Program_schema
 
