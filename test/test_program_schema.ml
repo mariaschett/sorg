@@ -100,6 +100,12 @@ let suite = "suite" >::: [
         assert_bool "" (not (equiv s t))
       );
 
+    "Extra uninterpreted Instruction in rhs" >::(fun _ ->
+        let s = [SWAP I; POP; SWAP II; POP] in
+        let t = [SWAP III; MLOAD; POP; POP] in
+        assert_bool "" (equiv s t)
+      );
+
     (* instruction_schema *)
 
     "Non-PUSH is a schema">::(fun _ ->

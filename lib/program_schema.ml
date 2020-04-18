@@ -38,8 +38,8 @@ let pp = Program.pp_h
 let equiv =
   let is_translation_valid s t =
     (* candidate instruction set is irrelevant, hence [] *)
-    let ecs = Enc_consts.mk s (`User []) in
-    let c = Superoptimization.enc_trans_val ecs t in
+    let ecs = Enc_consts.mk_trans_val s t (`User []) in
+    let c = Superoptimization.enc_trans_val ecs in
     match Z3util.solve_model_timeout [c] !timeout with
     | None -> true
     | Some _ -> false
