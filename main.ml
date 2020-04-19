@@ -60,7 +60,7 @@ let process_optimizations opts =
         ([%show: Time.t] (Time.now ())) (show_optimization opt);
       Out_channel.flush stderr;
       (process_optimization result opt, timeouts)
-    with Z3util.Z3_Timeout ->
+    with Z3util.Z3_Timeout _ ->
       Out_channel.fprintf stderr "[%s] timed out.\n" ([%show: Time.t] (Time.now ()));
       Out_channel.flush stderr;
       (result, opt :: timeouts)

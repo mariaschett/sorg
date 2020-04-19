@@ -41,8 +41,8 @@ let equiv =
     let ecs = Enc_consts.mk_trans_val s t (`User []) in
     let c = Superoptimization.enc_trans_val ecs in
     match Z3util.solve_model_timeout [c] !timeout with
-    | None -> true
-    | Some _ -> false
+    | None, _ -> true
+    | Some _, _ -> false
   in is_translation_valid
 
 let vars = Program.consts

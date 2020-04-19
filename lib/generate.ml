@@ -53,7 +53,10 @@ let rec strip' rs r = function
 let strip r =
   let k = List.length (Ctxt.common_prefix r.lhs r.rhs) in
   let m = List.length (Ctxt.common_postfix r.lhs r.rhs) in
-  let idxs = Util.cartesian_product_up_to k m in
+  let idxs =
+    List.sort (Util.cartesian_product_up_to k m)
+      ~compare:(fun i1 i2 -> Tuple.T2.compare ~cmp1:Int.compare ~cmp2:Int.compare i2 i1)
+  in
   let sr = strip' [] r idxs in
   let most_context r = not (List.exists sr ~f:(fun r' ->
       not ([%eq: Rule.t] r r') &&
