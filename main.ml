@@ -20,7 +20,8 @@ let process_optimization s t =
 let result_to_csv rs s t =
   let output = [outcsv_header] in
   match rs with
-  | None -> output
+  | None ->
+    output @ [[""; ""; ""; Program.show_h s ; Program.show_h t; ""]]
   | Some rules ->
     let rule_to_row r =
       let open Rule in
