@@ -9,18 +9,6 @@ type result =
   ; origins : (Rule.t * (Program.t * Program.t)) list
   }
 
-let incsv_header =
-  [ "source bytecode"
-  ; "target bytecode"
-  ; "target opcode"
-  ; "target instruction count"
-  ; "source gas"
-  ; "target gas"
-  ; "gas saved"
-  ; "known optimal"
-  ; "translation validation"
-  ]
-
 let outcsv_header =
   [ "lhs"
   ; "rhs"
@@ -33,15 +21,6 @@ let outcsv_header =
 
 let show_optimization (s, t) =
   Printf.sprintf "%s >= %s" (Program.show_h s) (Program.show_h t)
-
-let row_to_optimization r =
-  let parse s = Parser.parse @@ Sedlexing.Latin1.from_string s in
-  let sbc = Csv.Row.find r "source bytecode"
-  and tbc = Csv.Row.find r "target bytecode"
-  and tv = Csv.Row.find r "translation validation"
-  and gs = Csv.Row.find r "gas saved" in
-  if String.equal gs "0" || String.equal tv "false" then None
-  else Some (parse sbc, parse tbc)
 
 let process_optimization result (s, t) =
   let rs = Generate.generate_rules s t in
@@ -106,13 +85,7 @@ let result_to_csv result =
   in
   outcsv_header :: List.map result.rules ~f:rule_to_row
 
-let get_opts in_csv opt =
-  match in_csv with
-  | Some file ->
-    let csv = Csv.Rows.load ~has_header:true ~header:incsv_header file in
-    List.filter_map csv ~f:row_to_optimization
-  | None ->
-    match opt with
+let get_opts = function
     | Some (lhs, rhs) ->
       let parse s = Parser.parse @@ Sedlexing.Latin1.from_string s in
       [(parse lhs, parse rhs)]
@@ -122,9 +95,7 @@ let () =
   let open Command.Let_syntax in
   Command.basic ~summary:"sorg: A SuperOptimization based Rule Generator"
     [%map_open
-      let in_csv = flag "incsv" (optional string)
-          ~doc:"csv read optimizations from csv"
-      and timeout = flag "timeout" (optional int)
+      let timeout = flag "timeout" (optional int)
           ~doc:"TO passes timeout TO in seconds to each call to Z3; if one call \
                 times out then sorg gives up for that optimization."
       and tpdb = flag "tpdb" no_arg ~doc:"print output in tpdb format"
@@ -140,7 +111,7 @@ let () =
       in
       fun () ->
         Program_schema.timeout := (Option.value ~default:0 timeout) * 1000;
-        let opts = get_opts in_csv opt in
+        let opts = get_opts opt in
         Word.set_wsz 256;
         let (result, timeouts) = process_optimizations opts in
         if tpdb then
