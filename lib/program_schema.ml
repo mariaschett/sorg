@@ -69,3 +69,22 @@ let pp_tpdb fmt ?(var="P") p =
     | [] -> Format.fprintf fmt "%s%s" var (String.init len ~f:(fun _ -> ')'))
   in
   pp fmt p
+
+let parse buf =
+  let open Sedlexing in
+  let open Pusharg in
+  let white_spaces = [%sedlex.regexp? Star white_space] in
+  let digit = [%sedlex.regexp? '0'..'9'] in
+  let hexdigit = [%sedlex.regexp? digit | 'a' .. 'f'] in
+  let rec parse_pusharg buf =
+    match%sedlex buf with
+    | white_space -> parse_pusharg buf
+    | "Tmpl" -> Tmpl
+    | "0x", Plus hexdigit | Plus digit
+    | "c", id_start, Star id_continue -> Word (Word.from_string (Latin1.lexeme buf))
+    | _ -> raise (Parser.SyntaxError (lexeme_start buf))
+  in
+  match%sedlex buf with
+  | white_spaces, eof -> []
+  | white_spaces -> Parser.parse_wslist parse_pusharg buf
+  | _ -> raise (Parser.SyntaxError (lexeme_start buf))

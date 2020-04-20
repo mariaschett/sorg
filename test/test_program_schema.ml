@@ -14,6 +14,7 @@
 *)
 open Core
 open OUnit2
+open Sedlexing
 open Sorg
 open Ebso
 open Instruction.T
@@ -154,6 +155,24 @@ let suite = "suite" >::: [
         ~printer:[%show: int * Program_schema.t]
         (2, p') (maximal_schema 0 p)
       );
+
+    "parse empty program schema" >:: (fun _ ->
+        let s = Program_schema.show [] in
+        let buf = Latin1.from_string s in
+        assert_equal ~cmp:[%eq: Program_schema.t] ~printer:[%show: Program_schema.t]
+          []
+          (parse buf)
+      );
+
+    "parse program schema with variables" >:: (fun _ ->
+        let p = [PUSH (Word (Val "0")); PUSH (Word (Const "w_2")); ADD] in
+        let s = Program_schema.show p in
+        let buf = Latin1.from_string s in
+        assert_equal ~cmp:[%eq: Program_schema.t] ~printer:[%show: Program_schema.t]
+          p
+          (parse buf)
+      );
+
   ]
 
 let () =

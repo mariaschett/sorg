@@ -1,5 +1,5 @@
 (library (name sorg)
- (libraries core ebso)
- (preprocess (pps ppx_jane ppx_deriving.std)) 
+ (libraries core sedlex ebso)
+ (preprocess (pps ppx_jane ppx_deriving.std sedlex.ppx))
  (public_name sorg)
 )
