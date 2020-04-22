@@ -5,6 +5,7 @@ open Sorg
 let outcsv_header =
   [ "rule lhs"
   ; "rule rhs"
+  ; "vars"
   ; "gas saved"
   ; "optimization source"
   ; "optimization target"
@@ -29,6 +30,7 @@ let result_to_csv rs s t =
       let g = GC.to_int (Program.total_gas_cost r.lhs) - GC.to_int (Program.total_gas_cost r.rhs) in
       [ Program.show_h r.lhs
       ; Program.show_h r.rhs
+      ; String.concat (List.map ~f:(fun w -> [%show: Word.t] (Const w)) (vars r)) ~sep:" "
       ; [%show: int] g
       ; Program.show_h s
       ; Program.show_h t
