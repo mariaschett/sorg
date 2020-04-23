@@ -15,7 +15,7 @@ let outcsv_header =
 let process_optimization s t =
     try
       Some (Generate.generate_rules s t)
-    with Z3util.Z3_Timeout _ ->
+    with Z3util.Z3_Resource_Out _ ->
       None
 
 let result_to_csv rs s t =
