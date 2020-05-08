@@ -13,6 +13,7 @@
    limitations under the License.
 *)
 open Core
+open Ebso
 
 type t =
   { lhs : Program_schema.t;
@@ -52,3 +53,15 @@ let pp_tpdb fmt ?(var="P") r =
 
 let show_tpdb ?(var="P") r =
   pp_tpdb Format.str_formatter ~var:var r |> Format.flush_str_formatter
+
+let show_csv src tgt r =
+  let module GC = Gas_cost in
+  let g = GC.to_int (Program.total_gas_cost r.lhs) - GC.to_int (Program.total_gas_cost r.rhs) in
+  [ Program.show_h r.lhs
+  ; Program.show_h r.rhs
+  ; String.concat (List.map ~f:(fun w -> [%show: Word.t] (Const w)) (vars r)) ~sep:" "
+  ; [%show: int] g
+  ; Program.show_h src
+  ; Program.show_h tgt
+  ; show_tpdb r
+  ]

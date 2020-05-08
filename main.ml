@@ -21,23 +21,8 @@ let process_optimization s t =
 let result_to_csv rs s t =
   let output = [outcsv_header] in
   match rs with
-  | None ->
-    output @ [[""; ""; ""; Program.show_h s ; Program.show_h t; ""]]
-  | Some rules ->
-    let rule_to_row r =
-      let open Rule in
-      let module GC = Gas_cost in
-      let g = GC.to_int (Program.total_gas_cost r.lhs) - GC.to_int (Program.total_gas_cost r.rhs) in
-      [ Program.show_h r.lhs
-      ; Program.show_h r.rhs
-      ; String.concat (List.map ~f:(fun w -> [%show: Word.t] (Const w)) (vars r)) ~sep:" "
-      ; [%show: int] g
-      ; Program.show_h s
-      ; Program.show_h t
-      ; Rule.show_tpdb r
-      ]
-    in
-    output @ List.map rules ~f:rule_to_row
+  | None -> output @ [[""; ""; ""; ""; Program.show_h s ; Program.show_h t; ""]]
+  | Some rules -> output @ List.map rules ~f:(Rule.show_csv s t)
 
 let () =
   let open Command.Let_syntax in
