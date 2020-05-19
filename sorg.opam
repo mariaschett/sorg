@@ -1,6 +1,6 @@
 opam-version: "2.0"
 name: "sorg"
-version: "1.0"
+version: "1.1"
 synopsis: "Super Optimization based Rule Generator"
 maintainer: [ "mail@maria-a-schett.net" "mail@jnagele.net" ]
 authors: [ "mail@maria-a-schett.net" "mail@jnagele.net" ]
@@ -12,7 +12,7 @@ depends: [
   "ocaml"
   "dune"
   "core"
-  "ebso" {= "2.0"}
+  "ebso" {= "2.1"}
   "csv"
   "ounit" {with-test}
   "ppx_jane"

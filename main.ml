@@ -53,4 +53,4 @@ let () =
           Out_channel.printf "%s" msg;
           Option.iter out_csv ~f:(fun out -> Csv.save out (result_to_csv rules lhs rhs))
     ]
-  |> Command.run ~version:"1.0"
+  |> Command.run ~version:"1.1"
